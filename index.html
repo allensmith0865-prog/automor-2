@@ -1,0 +1,2114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Automor — Precision Engineered Automotive Components</title>
+  <meta name="description" content="Global supplier of precision-engineered automotive and motorcycle components. OEM quality for wholesale buyers and distributors worldwide." />
+  <meta name="keywords" content="automotive parts, OEM components, brake pads, bearings, motorcycle parts, wholesale distributor" />
+  <meta property="og:title" content="Automor — Precision Engineered Automotive Components" />
+  <meta property="og:description" content="Global supplier of precision-engineered automotive and motorcycle components." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23e8601a'/><text y='.9em' font-size='80' font-family='Arial' font-weight='bold' fill='white'>A</text></svg>" />
+  <style>
+    #loading {
+      position: fixed; inset: 0;
+      background: #080809;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 20px; z-index: 99999;
+      font-family: 'Courier New', monospace;
+    }
+    #loading-logo {
+      width: 52px; height: 52px;
+      background: #e8601a;
+      display: flex; align-items: center; justify-content: center;
+      clip-path: polygon(0 0, 100% 0, 100% 72%, 72% 100%, 0 100%);
+      font-size: 26px; font-weight: 900; color: #fff;
+    }
+    #loading-text {
+      color: #8a8a93; font-size: 11px;
+      letter-spacing: 3px; text-transform: uppercase;
+    }
+    #loading-bar {
+      width: 160px; height: 2px;
+      background: #1c1c1f; border-radius: 1px; overflow: hidden;
+    }
+    #loading-fill {
+      height: 100%; background: #e8601a;
+      animation: load 1.8s ease-in-out infinite;
+    }
+    @keyframes load {
+      0% { width: 0%; margin-left: 0; }
+      50% { width: 60%; margin-left: 20%; }
+      100% { width: 0%; margin-left: 100%; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#080809;">
+
+  <!-- Loading screen shown while React initialises -->
+  <div id="loading">
+    <div id="loading-logo">A</div>
+    <div id="loading-text">Initialising</div>
+    <div id="loading-bar"><div id="loading-fill"></div></div>
+  </div>
+
+  <div id="root"></div>
+
+  <!-- React 18 -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Babel standalone (transpiles JSX in browser) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+
+/* ─── FILE READER HELPER ─────────────────────────────────── */
+const readFile = (file, cb) => {
+  const r = new FileReader();
+  r.onload = e => cb(e.target.result);
+  r.readAsDataURL(file);
+};
+
+/* ─── VERIFICATION HELPERS ───────────────────────────────── */
+const genCode = () => `AM${Math.random().toString(36).substring(2,10).toUpperCase()}`;
+const qrImgUrl = (code, size=220, domain="https://yoursite.com") =>
+  `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(`${domain}/#verify/${code}`)}&bgcolor=ffffff&color=111213&format=png&qzone=1`;
+
+/* ─── DESIGN TOKENS ──────────────────────────────────────── */
+const C = {
+  bg:"#080809", card:"#111213", el:"#1c1c1f", border:"#27272b",
+  accent:"#e8601a", accentD:"rgba(232,96,26,0.1)", accentB:"rgba(232,96,26,0.22)",
+  text:"#f0f0f2", sub:"#8a8a93", muted:"#505058", white:"#fff",
+  green:"#22c55e", red:"#ef4444", blue:"#60a5fa",
+};
+
+/* ─── RESPONSIVE HOOK ─────────────────────────────────────── */
+function useW() {
+  const [w, setW] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
+  useEffect(() => { const h = () => setW(window.innerWidth); window.addEventListener("resize", h); return () => window.removeEventListener("resize", h); }, []);
+  return w;
+}
+
+/* ─── INITIAL CONFIG DATA ─────────────────────────────────── */
+const INIT_HEADER = {
+  logo: "",           // base64 or URL — empty = text logo
+  logoText: "AUTOMOR",
+  navLinks: [
+    { id:1, label:"Products", page:"categories" },
+    { id:2, label:"About",    page:"about"      },
+    { id:3, label:"Blog",     page:"blog"       },
+    { id:4, label:"FAQ",      page:"faq"        },
+    { id:5, label:"Contact",  page:"contact"    },
+  ],
+  ctaText: "Request Inquiry",
+  ctaPage: "contact",
+};
+
+const INIT_HOME = {
+  hero: {
+    bgImage: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1600&q=50",
+    badge: "Global OEM Component Supplier",
+    headline: "Precision\nEngineered\nAutomotive\nComponents",
+    subtext: "OEM Quality · Global Supply · Engineered to Perform",
+    btn1Text:"Explore Products", btn1Page:"categories",
+    btn2Text:"Contact Us",      btn2Page:"contact",
+    catalogBtnText:"Full Catalog PDF",
+    catalogPDF:"",
+  },
+  trust:[
+    {text:"ISO 9001:2015 Certified"},{text:"38 Export Markets"},
+    {text:"ECE R90 Compliant"},{text:"OEM Spec Matched"},{text:"6,000+ SKUs"},
+  ],
+  catSection:  { label:"Product Lines",   title:"Product Categories",  sub:"Six specialized lines covering the full spectrum of automotive components." },
+  featSection: { label:"Highlighted",     title:"Featured Products" },
+  why: {
+    label:"Our Advantage", title:"Why Automor",
+    sub:"Built for distributors who demand consistent quality and reliable supply.",
+    items:[
+      {title:"OEM Specification", body:"Dimensionally validated against OEM references with full traceability."},
+      {title:"Supply Stability",  body:"A-class SKUs at 90-day buffer stock. Multi-location inventory for uninterrupted fulfillment."},
+      {title:"Global Export",     body:"Full export documentation and freight coordination for all destinations."},
+      {title:"Certified Quality", body:"ISO 9001:2015 certified. ECE R90 brake certification."},
+    ],
+  },
+  cta: {
+    label:"Distributor Inquiries",
+    title:"Ready to Discuss\nYour Requirements?",
+    body:"Pricing, samples, or technical docs — our team responds within one business day.",
+    btn1Text:"Submit Inquiry", btn1Page:"contact",
+    btn2Text:"Learn More",    btn2Page:"about",
+  },
+  blogSection:{ label:"Knowledge Base", title:"Technical Insights" },
+};
+
+const INIT_FOOTER = {
+  tagline:"Precision-engineered automotive components for wholesale buyers and distributors worldwide.",
+  col3Title:"Company",
+  col3Links:[
+    {id:1,label:"About Us",page:"about"},
+    {id:2,label:"Blog",page:"blog"},
+    {id:3,label:"FAQ",page:"faq"},
+    {id:4,label:"Contact",page:"contact"},
+  ],
+  copyright:`© ${new Date().getFullYear()} Automor. All rights reserved.`,
+  certText:"ISO 9001:2015 Certified · ECE R90 Compliant",
+};
+
+const INIT_SEO = {
+  siteTitle:"Automor — Precision Engineered Automotive Components",
+  metaDesc:"Global supplier of precision-engineered automotive and motorcycle components. OEM quality for wholesale buyers and distributors worldwide.",
+  keywords:"automotive parts, OEM components, brake pads, bearings, motorcycle parts, wholesale distributor",
+  ogImage:"",
+  googleAnalyticsId:"",
+  googleVerification:"",
+  robots:"index, follow",
+  canonicalDomain:"https://www.automor.com",
+};
+
+const INIT_BRAND = {
+  name:"AUTOMOR",
+  email:"inquiry@automor.com",
+  phone:"+1 (800) 000-0000",
+  address:"Export Processing Zone, Industrial District",
+  social:{linkedin:"#",twitter:"#",youtube:"#",instagram:"#"},
+  stats:[
+    {value:"6,000+",label:"SKUs Available"},
+    {value:"38",label:"Export Markets"},
+    {value:"ISO 9001",label:"Certified"},
+    {value:"99.4%",label:"On-Time Delivery"},
+  ],
+};
+
+const INIT_CATEGORIES = [
+  {id:"motorcycle",name:"Motorcycle Parts",count:14,image:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",description:"Brake systems, drive chains, clutch assemblies, and complete engine components."},
+  {id:"filters",name:"Automotive Filters",count:5,image:"https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80",description:"OEM-grade oil, air, fuel, cabin air, and performance filtration systems."},
+  {id:"bearings",name:"Bearings & Precision",count:8,image:"https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?w=800&q=80",description:"High-precision ball, roller, needle, and hub bearings for all applications."},
+  {id:"electrical",name:"Electrical & Engine",count:4,image:"https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=800&q=80",description:"Starter motors, rectifiers, fuel pumps, and sensor systems."},
+  {id:"rubber",name:"Rubber & Suspension",count:6,image:"https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80",description:"Shock absorbers, suspension bushes, engine mounts, and gasket sets."},
+  {id:"fasteners",name:"Fasteners & Hardware",count:5,image:"https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800&q=80",description:"Grade 8.8 bolt sets, washers, clips, chain locks, and bearing locks."},
+];
+
+/* ── Products now have: image (main), gallery[], pdfUrl ─── */
+const INIT_PRODUCTS = [
+  {id:"ABP-101",verifyCode:"AM7X2K9PLQ",name:"Automor Brake Pad",sku:"ABP-101",category:"motorcycle",shortDesc:"High-performance sintered brake pad for consistent stopping power across all temperature ranges.",image:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",gallery:["https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80","https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80","https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?w=800&q=80"],pdfUrl:"",specs:[{key:"Material",value:"Sintered Metal Composite"},{key:"Operating Temp",value:"-40°C to +350°C"},{key:"Friction Coeff.",value:"0.38 – 0.42"},{key:"Thickness",value:"10.5mm ± 0.1mm"},{key:"Certification",value:"ECE R90"}],compatible:"Honda CB Series (125/150/160)\nYamaha FZS 150/160\nBajaj Pulsar 150/180\nTVS Apache RTR 160/200",featured:true},
+  {id:"ABS-102",verifyCode:"AMQ4R8LNZW",name:"Automor Brake Shoe",sku:"ABS-102",category:"motorcycle",shortDesc:"Drum brake shoe with reinforced bonding and precision-ground friction surface.",image:"https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80",gallery:["https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80","https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?w=800&q=80"],pdfUrl:"",specs:[{key:"Material",value:"Asbestos-Free Composite"},{key:"Bond Strength",value:"≥ 550 N/cm²"},{key:"Lining Thickness",value:"4.5mm"},{key:"Certification",value:"ISO 6312"}],compatible:"Honda CD 70/80\nSuzuki GS 150\nYamaha RX 100",featured:false},
+  {id:"ACP-103",verifyCode:"AMF6T1MSBY",name:"Automor Clutch Plate Set",sku:"ACP-103",category:"motorcycle",shortDesc:"Complete ferro-organic friction + steel plate set for smooth, reliable engagement.",image:"https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?w=800&q=80",gallery:["https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?w=800&q=80","https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80"],pdfUrl:"",specs:[{key:"Material",value:"Ferro-Organic Friction"},{key:"Plate Count",value:"6 Friction + 5 Steel"},{key:"Outer Diameter",value:"128mm"},{key:"Inner Diameter",value:"78mm"}],compatible:"Honda CB 125/150\nYamaha FZ Series\nBajaj Discover 100/125",featured:true},
+  {id:"AOF-205",verifyCode:"AMDG3WU4VH",name:"Automor Oil Filter",sku:"AOF-205",category:"filters",shortDesc:"Spin-on oil filter with anti-drain-back valve and cellulose-synthetic blend media.",image:"https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80",gallery:["https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80","https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=800&q=80"],pdfUrl:"",specs:[{key:"Filter Media",value:"Cellulose-Synthetic Blend"},{key:"Filtration Rating",value:"20 Microns"},{key:"Burst Pressure",value:"≥ 21 Bar"},{key:"Thread",value:"M20×1.5"},{key:"By-Pass Valve",value:"1.2 Bar"}],compatible:"Toyota Corolla 1.6/2.0\nHonda Civic 1.5/1.8\nNissan Sunny/Almera\nMitsubishi Lancer",featured:true},
+  {id:"ABR-6203",verifyCode:"AMP9K7RNCX",name:"Automor Ball Bearing 6203",sku:"ABR-6203",category:"bearings",shortDesc:"Deep groove ball bearing ABEC-5, pre-lubricated for high-speed applications.",image:"https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?w=800&q=80",gallery:["https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?w=800&q=80","https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80"],pdfUrl:"",specs:[{key:"Type",value:"Deep Groove Ball Bearing"},{key:"Bore (ID)",value:"17mm"},{key:"OD",value:"40mm"},{key:"Width",value:"12mm"},{key:"Tolerance",value:"ABEC-5"},{key:"Dynamic Load",value:"9.95 kN"},{key:"Material",value:"GCr15"}],compatible:"Motorcycle / Automotive Wheel Hubs\nAlternators & Generators\nGearboxes",featured:true},
+  {id:"AHB-301",verifyCode:"AMZJ5E2YTQ",name:"Automor Hub Bearing Unit",sku:"AHB-301",category:"bearings",shortDesc:"Automotive wheel hub bearing with integrated ABS sensor ring for plug-and-play fit.",image:"https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80",gallery:["https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80","https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?w=800&q=80"],pdfUrl:"",specs:[{key:"Type",value:"Double Row Angular Contact"},{key:"ABS Ring",value:"Integrated"},{key:"Sealing",value:"Triple Lip Seal"},{key:"Material",value:"Chrome Steel GCr15"}],compatible:"Toyota RAV4 (2013–2019)\nHonda CR-V (2012–2018)\nMitsubishi Outlander",featured:true},
+  {id:"ASM-401",verifyCode:"AMU8A6BWXK",name:"Automor Starter Motor",sku:"ASM-401",category:"electrical",shortDesc:"High-torque 1.4kW starter motor with copper windings and planetary gear drive.",image:"https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=800&q=80",gallery:["https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=800&q=80"],pdfUrl:"",specs:[{key:"Voltage",value:"12V DC"},{key:"Power Output",value:"1.4 kW"},{key:"Drive Type",value:"Planetary Gear"},{key:"No. of Teeth",value:"9"},{key:"Weight",value:"2.8 kg"}],compatible:"Toyota Hiace 2.5D/3.0D\nMitsubishi L200/Triton\nIsuzu D-Max",featured:false},
+  {id:"ASA-501",verifyCode:"AMHV3L9MDN",name:"Automor Shock Absorber",sku:"ASA-501",category:"rubber",shortDesc:"Gas-charged monotube shock absorber with nitrogen for consistent damping performance.",image:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",gallery:["https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80","https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80"],pdfUrl:"",specs:[{key:"Type",value:"Gas Monotube"},{key:"Stroke",value:"120mm"},{key:"Extended Length",value:"380mm"},{key:"Gas",value:"Nitrogen, 20 Bar"},{key:"Piston Rod",value:"Ø14mm Chrome"}],compatible:"Honda CB Series\nYamaha FZS / FZ\nBajaj Pulsar 150/180/220",featured:true},
+  {id:"ABN-601",verifyCode:"AMXY4C0GWF",name:"Automor Bolt & Nut Set",sku:"ABN-601",category:"fasteners",shortDesc:"Grade 8.8 hex bolt and nut assortment with zinc phosphate corrosion coating.",image:"https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800&q=80",gallery:["https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=800&q=80"],pdfUrl:"",specs:[{key:"Grade",value:"8.8 (ISO 898-1)"},{key:"Coating",value:"Zinc Phosphate + Oil"},{key:"Sizes",value:"M6, M8, M10, M12"},{key:"Set Count",value:"50 pcs assorted"}],compatible:"Universal Automotive Application",featured:false},
+];
+
+const INIT_BLOG = [
+  {id:1,title:"Understanding OEM vs Aftermarket: What Distributors Need to Know",category:"Industry Insights",date:"May 20, 2025",readTime:"6 min",excerpt:"The distinction between OEM and aftermarket components carries significant implications for supply chain reliability and end-customer satisfaction.",image:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80",content:"OEM parts are produced by the same manufacturer that made the original vehicle parts. Aftermarket parts are produced by third-party manufacturers. For wholesale distributors, the choice involves nuanced trade-offs in pricing, lead time, certification requirements, and brand positioning.\n\nAutomor's approach is to produce aftermarket components that meet or exceed OEM specifications—giving distributors the reliability of OEM quality at aftermarket economics. This is achieved through rigorous dimensional validation, material certification, and performance testing aligned to ISO 9001 and ECE R90.\n\nDistributors who stock certified-equivalent components report significantly fewer warranty claims and higher repeat purchase rates."},
+  {id:2,title:"Bearing Selection Guide for High-Temperature Applications",category:"Technical",date:"May 8, 2025",readTime:"8 min",excerpt:"Selecting the correct bearing for elevated-temperature environments requires understanding material properties and lubrication requirements.",image:"https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?w=900&q=80",content:"Elevated operating temperatures affect bearing performance through changes in material expansion, lubricant viscosity, and internal clearance.\n\nFor applications exceeding 120°C, standard bearings may require C3 or C4 clearance variants lubricated with high-temperature grease rated to 200°C. Chrome steel GCr15 is suitable to approximately 150°C.\n\nAutomor stocks C3 clearance variants for the full 6200, 6300, and 6000 series—available with 2RS or ZZ shields."},
+  {id:3,title:"Global Supply Chain Resilience in the Automotive Parts Sector",category:"Supply Chain",date:"April 25, 2025",readTime:"5 min",excerpt:"Post-pandemic disruptions accelerated the shift toward multi-source procurement strategies among automotive parts distributors worldwide.",image:"https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=900&q=80",content:"The 2020–2022 supply chain disruption exposed the fragility of single-source procurement across all industrial sectors.\n\nDistributors with multiple qualified suppliers experienced significantly lower stockout rates. At Automor, we maintain minimum buffer inventory of 90 days for all A-class SKUs.\n\nBuilding resilience means qualifying at least two sources per critical SKU family and maintaining safety stock calibrated to your market's demand volatility."},
+];
+
+const INIT_FAQ = [
+  {id:1,q:"What is the minimum order quantity (MOQ)?",a:"MOQ varies by product category. For standard components such as filters and bearings, MOQ typically starts at 100 units per SKU. For specialty items, please submit an inquiry for a custom quotation."},
+  {id:2,q:"Are Automor products OEM-equivalent?",a:"Yes. All Automor components are manufactured to OEM dimensional and performance specifications. Our production processes are ISO 9001:2015 certified."},
+  {id:3,q:"Do you supply to distributors internationally?",a:"We supply to wholesale buyers, distributors, and automotive parts dealers globally. Export documentation, customs support, and freight coordination are available."},
+  {id:4,q:"How do I request product samples?",a:"Submit a request through the Contact page with your company details, SKU(s) of interest, and intended application. Standard sample processing time is 5–7 business days."},
+  {id:5,q:"What quality certifications do your products hold?",a:"Depending on the product line, components carry ISO 9001, ECE R90, and IATF 16949 certifications. Specific documents are available upon request for qualified distributors."},
+  {id:6,q:"What is the typical lead time for bulk orders?",a:"Standard lead time for stocked items is 7–14 business days from order confirmation. For custom or high-volume orders, lead times are confirmed at order acceptance."},
+];
+
+/* ─── GLOBAL CSS ──────────────────────────────────────────── */
+function GS() {
+  return (
+    <style>{`
+      @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
+      *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+      html{scroll-behavior:smooth}
+      body{background:#080809;color:#f0f0f2;font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased}
+      ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#0d0d0f}::-webkit-scrollbar-thumb{background:#e8601a;border-radius:2px}
+      a{text-decoration:none;color:inherit}
+      button{border:none;cursor:pointer;font-family:inherit;background:none}
+      input,textarea,select{font-family:'DM Sans',sans-serif;background:#1c1c1f;border:1px solid #27272b;color:#f0f0f2;outline:none;padding:10px 12px;border-radius:3px;font-size:13px;transition:border-color 0.2s;resize:vertical}
+      input:focus,textarea:focus,select:focus{border-color:#e8601a}
+      img{display:block;max-width:100%}
+      @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+      .fu{animation:fadeUp 0.38s ease both}
+      .ch{transition:transform 0.22s ease,box-shadow 0.22s ease,border-color 0.2s}
+      .ch:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.55)}
+      .gp{background-image:linear-gradient(rgba(255,255,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.022) 1px,transparent 1px);background-size:44px 44px}
+
+      /* BUTTONS */
+      .bp{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:11px 22px;border-radius:3px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;background:#e8601a;color:#fff;border:none;transition:background 0.2s,box-shadow 0.2s;white-space:nowrap}
+      .bp:hover{background:#ff7530;box-shadow:0 0 18px rgba(232,96,26,0.3)}
+      .bo{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:10px 22px;border-radius:3px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;background:transparent;color:#f0f0f2;border:1px solid #27272b;transition:border-color 0.2s,color 0.2s;white-space:nowrap}
+      .bo:hover{border-color:#e8601a;color:#e8601a}
+      .bsm{padding:7px 14px!important;font-size:11px!important}
+      .bfull{width:100%;justify-content:center}
+      .bred{background:#ef4444!important}.bred:hover{background:#dc2626!important;box-shadow:none!important}
+      .bgrn{background:#16a34a!important}.bgrn:hover{background:#15803d!important;box-shadow:none!important}
+
+      /* LAYOUT */
+      .mw{max-width:1240px;margin:0 auto}
+      .sp{padding:80px 24px}.spx{padding:56px 24px}
+      .sl{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#e8601a;display:block;margin-bottom:10px}
+      .st{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:clamp(24px,4vw,40px);color:#fff;line-height:1.1;letter-spacing:-0.4px}
+      .ss{color:#8a8a93;font-size:14px;line-height:1.75;max-width:520px;margin-top:10px}
+      .sku{font-family:'Space Mono',monospace;font-size:10px;color:#e8601a;background:rgba(232,96,26,0.1);border:1px solid rgba(232,96,26,0.22);padding:3px 8px;border-radius:2px;display:inline-block;letter-spacing:1px}
+
+      /* GRIDS */
+      .gcats{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+      .gprod{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+      .gblog{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+      .gwhy{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:2px}
+      .gcap{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+      .gtrust{display:flex;flex-wrap:wrap}
+      .g2{display:grid;grid-template-columns:1fr 1fr;gap:44px}
+      .g2a{display:grid;grid-template-columns:1fr 1.6fr;gap:44px}
+      .gfooter{display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr;gap:32px}
+      .gfeat{display:grid;grid-template-columns:1fr 1fr}
+
+      /* TRUST */
+      .ti{display:flex;align-items:center;gap:9px;padding:16px 12px;color:#8a8a93;font-size:12px;font-weight:500;flex:1;min-width:150px;justify-content:center;border-right:1px solid #27272b}
+      .ti:last-child{border-right:none}
+
+      /* NAV */
+      .nd{display:flex;align-items:center;gap:2px}
+      .nmb{display:none;color:#f0f0f2}
+      .dcta{display:inline-flex}
+
+      /* ADMIN */
+      .adlay{display:flex;min-height:100vh}
+      .adside{width:220px;flex-shrink:0;background:#0d0d0f;border-right:1px solid #1e1e21;display:flex;flex-direction:column}
+      .admain{flex:1;background:#0a0a0b;overflow-y:auto}
+      .adnav{display:flex;align-items:center;gap:10px;padding:11px 18px;font-size:13px;color:#8a8a93;cursor:pointer;width:100%;text-align:left;transition:all 0.15s;border-left:3px solid transparent}
+      .adnav:hover{color:#f0f0f2;background:rgba(255,255,255,0.03)}
+      .adnav.on{color:#e8601a;background:rgba(232,96,26,0.08);border-left-color:#e8601a}
+      .adtbl{width:100%;border-collapse:collapse;font-size:13px}
+      .adtbl th{background:#1c1c1f;color:#8a8a93;font-weight:600;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid #27272b}
+      .adtbl td{padding:10px 14px;border-bottom:1px solid #1a1a1d;color:#e0e0e4;vertical-align:middle}
+      .adtbl tr:hover td{background:rgba(255,255,255,0.018)}
+      .adcard{background:#111213;border:1px solid #27272b;border-radius:4px;padding:20px}
+      .lbl{display:block;color:#8a8a93;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;font-weight:600}
+      .fg{margin-bottom:14px}
+      .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+      .bgray{background:rgba(255,255,255,0.06);color:#8a8a93;border:1px solid #27272b;font-size:10px;font-family:'Space Mono',monospace;padding:2px 7px;border-radius:2px;display:inline-block}
+      .bgrn2{background:rgba(34,197,94,0.1);color:#22c55e;border:1px solid rgba(34,197,94,0.25);font-size:10px;font-family:'Space Mono',monospace;padding:2px 7px;border-radius:2px;display:inline-block}
+      .divider{height:1px;background:#27272b}
+
+      /* HERO */
+      .hh1{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:clamp(38px,7vw,76px);color:#fff;line-height:1.03;letter-spacing:-1.5px;margin-bottom:20px}
+      .hbtns{display:flex;gap:12px;flex-wrap:wrap}
+      .hstats{display:flex;gap:32px;flex-wrap:wrap;margin-top:48px;padding-top:32px;border-top:1px solid #27272b}
+
+      /* RESPONSIVE */
+      @media(max-width:900px){
+        .g2{grid-template-columns:1fr!important;gap:28px!important}
+        .g2a{grid-template-columns:1fr!important;gap:28px!important}
+        .gfooter{grid-template-columns:1fr 1fr!important;gap:22px!important}
+        .gfeat{grid-template-columns:1fr!important}
+      }
+      @media(max-width:768px){
+        .nd{display:none!important}.nmb{display:flex!important}.dcta{display:none!important}
+        .sp{padding:52px 16px!important}.spx{padding:36px 16px!important}
+        .gwhy{grid-template-columns:1fr!important;gap:1px!important}
+        .ti{border-right:none!important;border-bottom:1px solid #27272b;min-width:calc(50% - 1px)}
+        .hstats{gap:18px!important;margin-top:32px!important;padding-top:24px!important}
+        .fgrid{grid-template-columns:1fr!important}
+        .adside{width:100%;flex-direction:row;border-right:none;border-bottom:1px solid #1e1e21;overflow-x:auto}
+        .adnav{border-left:none!important;border-bottom:3px solid transparent;white-space:nowrap;flex-shrink:0;padding:10px 12px}
+        .adnav.on{border-bottom-color:#e8601a!important;border-left-color:transparent!important}
+        .adlay{flex-direction:column}
+      }
+      @media(max-width:520px){
+        .gcats,.gprod,.gblog{grid-template-columns:1fr!important}
+        .gwhy{gap:1px!important}
+        .gfooter{grid-template-columns:1fr!important}
+        .hh1{font-size:34px!important}
+        .adtbl{font-size:11px}.adtbl th,.adtbl td{padding:8px 8px}
+        .ti{min-width:100%}
+      }
+    `}</style>
+  );
+}
+
+/* ─── ICONS ───────────────────────────────────────────────── */
+const Ic = {
+  Arrow:()=><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>,
+  Chev:({o})=><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{transform:o?"rotate(180deg)":"rotate(0)",transition:"transform 0.25s"}}><path d="M6 9l6 6 6-6"/></svg>,
+  Menu:()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>,
+  X:()=><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>,
+  Down:()=><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>,
+  Chk:()=><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>,
+  File:()=><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>,
+  Img:()=><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>,
+  Shield:()=><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+  Globe:()=><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>,
+  Award:()=><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>,
+  Mail:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>,
+  Phone:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 11a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.16 6.16l1.79-1.34a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0121.92 15z"/></svg>,
+  Pin:()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  Edit:()=><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+  Trash:()=><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>,
+  Plus:()=><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>,
+  Star:()=><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
+  Lock:()=><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>,
+  Key:()=><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M21 2l-9.6 9.6M15.5 7.5l3 3"/></svg>,
+  Search:()=><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>,
+  Link:()=><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>,
+  Li:()=><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>,
+  Tw:()=><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg>,
+  Yt:()=><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 00-1.95 1.96A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 001.95-1.95A29 29 0 0023 12a29 29 0 00-.46-5.58z"/><polygon points="9.75,15.02 15.5,12 9.75,8.98" fill="white"/></svg>,
+  Ig:()=><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>,
+  Dash:()=><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
+  Pkg:()=><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 002 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>,
+  Inbox:()=><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>,
+  Seo:()=><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>,
+  Settings:()=><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>,
+  Home:()=><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+  Blog:()=><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>,
+};
+
+/* ─── SHARED COMPONENTS ───────────────────────────────────── */
+
+/* Image picker: upload or URL */
+function ImgInput({ label, val, set, small }) {
+  return (
+    <div className="fg">
+      {label && <label className="lbl">{label}</label>}
+      <div style={{ display:"flex", gap:8 }}>
+        <input style={{ flex:1 }} placeholder="Paste image URL, or upload →"
+          value={val?.startsWith?.("data:") ? "✓ Image uploaded from device" : (val||"")}
+          onChange={e => set(e.target.value)} />
+        <label className="bo bsm" style={{ cursor:"pointer", flexShrink:0, display:"inline-flex", alignItems:"center", gap:5 }}>
+          <Ic.Img /> Upload
+          <input type="file" accept="image/*" hidden onChange={e => { if(e.target.files[0]) readFile(e.target.files[0], set); }} />
+        </label>
+      </div>
+      {val && <img src={val} alt="preview" style={{ marginTop:8, height:small?52:80, borderRadius:3, border:`1px solid ${C.border}`, objectFit:"cover", maxWidth:160 }} onError={e=>e.target.style.display="none"} />}
+    </div>
+  );
+}
+
+/* PDF picker: upload or URL */
+function PdfInput({ label, val, set }) {
+  return (
+    <div className="fg">
+      {label && <label className="lbl">{label}</label>}
+      <div style={{ display:"flex", gap:8 }}>
+        <input style={{ flex:1 }} placeholder="Paste PDF URL, or upload →"
+          value={val?.startsWith?.("data:application/pdf") ? "✓ PDF uploaded from device" : (val||"")}
+          onChange={e => set(e.target.value)} />
+        <label className="bo bsm" style={{ cursor:"pointer", flexShrink:0, display:"inline-flex", alignItems:"center", gap:5 }}>
+          <Ic.File /> Upload PDF
+          <input type="file" accept=".pdf,application/pdf" hidden onChange={e => { if(e.target.files[0]) readFile(e.target.files[0], set); }} />
+        </label>
+      </div>
+      {val && (
+        <div style={{ marginTop:8, display:"flex", alignItems:"center", gap:8, background:C.el, padding:"8px 12px", borderRadius:3, border:`1px solid ${C.border}` }}>
+          <Ic.File /><span style={{ color:C.green, fontSize:12 }}>PDF attached — ready for download</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Gallery: main image + multiple extras */
+function GalleryInput({ images=[], setImages }) {
+  const [url, setUrl] = useState("");
+  const add = src => setImages([...images, src]);
+  const remove = i => setImages(images.filter((_,idx)=>idx!==i));
+  return (
+    <div className="fg">
+      <label className="lbl">Gallery Images (upload multiple or paste URLs)</label>
+      <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:10 }}>
+        {images.map((img,i)=>(
+          <div key={i} style={{ position:"relative", width:76, height:76 }}>
+            <img src={img} alt="" style={{ width:"100%", height:"100%", objectFit:"cover", borderRadius:3, border:`1px solid ${C.border}` }} onError={e=>e.target.style.opacity="0.3"} />
+            <button onClick={()=>remove(i)} style={{ position:"absolute", top:-5, right:-5, width:18, height:18, background:C.red, color:"#fff", borderRadius:"50%", fontSize:13, display:"flex", alignItems:"center", justifyContent:"center", border:"none", cursor:"pointer" }}>×</button>
+            {i===0 && <div style={{ position:"absolute", bottom:2, left:2, background:C.accent, fontSize:8, color:"#fff", padding:"1px 4px", borderRadius:2, fontFamily:"'Space Mono',monospace" }}>MAIN</div>}
+          </div>
+        ))}
+        <label style={{ width:76, height:76, background:C.el, border:`2px dashed ${C.border}`, borderRadius:3, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:"pointer", color:C.sub, gap:4, fontSize:11 }}>
+          <Ic.Plus /> Add
+          <input type="file" accept="image/*" hidden multiple onChange={e=>{ [...e.target.files].forEach(f=>readFile(f,add)); }} />
+        </label>
+      </div>
+      <div style={{ display:"flex", gap:8 }}>
+        <input placeholder="Or paste URL and press Enter" value={url} onChange={e=>setUrl(e.target.value)} onKeyDown={e=>{ if(e.key==="Enter"&&url){ add(url); setUrl(""); } }} />
+      </div>
+    </div>
+  );
+}
+
+/* ─── ADMIN PANEL ─────────────────────────────────────────── */
+/*
+   🔒 SECURITY:
+   • No public link in footer or anywhere on the website
+   • Access ONLY via keyboard shortcut: Ctrl + Shift + A
+   • Max 3 login attempts → 30-second lockout
+   • Session is memory-only (auto-logout on page reload)
+*/
+function AdminLogin({ onSuccess, onClose }) {
+  const [pw, setPw] = useState("");
+  const [err, setErr] = useState("");
+  const [attempts, setAttempts] = useState(0);
+  const [lockUntil, setLockUntil] = useState(0);
+  const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    if (lockUntil <= 0) return;
+    const t = setInterval(() => {
+      const rem = Math.ceil((lockUntil - Date.now()) / 1000);
+      if (rem <= 0) { setLockUntil(0); setCountdown(0); setAttempts(0); setErr(""); clearInterval(t); }
+      else setCountdown(rem);
+    }, 500);
+    return () => clearInterval(t);
+  }, [lockUntil]);
+
+  const login = () => {
+    if (Date.now() < lockUntil) { setErr(`Locked. Try again in ${countdown}s`); return; }
+    if (pw === "automor2024") { onSuccess(); }
+    else {
+      const na = attempts + 1;
+      setAttempts(na);
+      if (na >= 3) { const t = Date.now() + 30000; setLockUntil(t); setErr("Too many attempts. Locked for 30 seconds."); }
+      else setErr(`Incorrect password. ${3 - na} attempt(s) remaining.`);
+    }
+  };
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.95)", backdropFilter:"blur(8px)", zIndex:9998, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
+      <div className="fu adcard" style={{ maxWidth:380, width:"100%", padding:"36px 32px" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
+          <div style={{ width:38, height:38, background:C.accent, borderRadius:3, display:"flex", alignItems:"center", justifyContent:"center", color:"#fff" }}><Ic.Lock /></div>
+          <div>
+            <div style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:18, color:C.white }}>Admin Access</div>
+            <div style={{ color:C.muted, fontSize:11 }}>AUTOMOR Content Management System</div>
+          </div>
+        </div>
+        <div style={{ background:C.accentD, border:"1px solid rgba(232,96,26,0.2)", borderRadius:3, padding:"10px 14px", margin:"20px 0 20px", fontSize:12, color:C.sub }}>
+          🔒 Restricted area. Authorised personnel only.
+        </div>
+        <label className="lbl">Password</label>
+        <input type="password" placeholder="Enter admin password…" value={pw} style={{ width:"100%", marginBottom:6 }} onChange={e=>{setPw(e.target.value);setErr("");}} onKeyDown={e=>e.key==="Enter"&&login()} autoFocus />
+        {err && <p style={{ color:C.red, fontSize:12, marginBottom:8 }}>{err}{countdown>0&&` (${countdown}s)`}</p>}
+        <button className="bp bfull" style={{ marginTop:10 }} onClick={login} disabled={Date.now()<lockUntil}>
+          {Date.now()<lockUntil ? `Locked (${countdown}s)` : "Sign In"}
+        </button>
+        <button onClick={onClose} style={{ display:"block", width:"100%", textAlign:"center", color:C.muted, fontSize:12, marginTop:14 }}>← Cancel</button>
+        <div className="divider" style={{ margin:"18px 0 12px" }} />
+        <p style={{ color:C.muted, fontSize:11, textAlign:"center", lineHeight:1.8 }}>
+          Live site: <span style={{ fontFamily:"'Space Mono',monospace", color:C.sub }}>yoursite.com/#admin</span><br/>
+          Preview: <span style={{ fontFamily:"'Space Mono',monospace", color:C.sub }}>Ctrl+Shift+A</span>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function AdminPanel({ onExit, products, setProducts, categories, setCategories, blog, setBlog, faq, setFaq, brand, setBrand, inquiries, header, setHeader, homeData, setHomeData, footer, setFooter, seo, setSeo }) {
+  const [tab, setTab] = useState("dashboard");
+  const [showForm, setShowForm] = useState(false);
+  const [editItem, setEditItem] = useState(null);
+  const w = useW();
+  const isMob = w < 768;
+
+  const sf = (t, item=null) => { setTab(t); setShowForm(!!item||false); setEditItem(item); };
+
+  const Hdr = ({title, action}) => (
+    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20, flexWrap:"wrap", gap:12 }}>
+      <h2 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:22, color:C.white }}>{title}</h2>
+      {action}
+    </div>
+  );
+
+  const SaveBtn = ({ onSave, saved }) => (
+    <button className={`bp${saved?" bgrn":""}`} onClick={onSave}>{saved?"✓ Saved!":"Save Changes"}</button>
+  );
+
+  /* ── PRODUCT FORM ── */
+  function ProdForm({ item, onSave, onCancel }) {
+    const blank = { id:`AP-${Date.now()}`, name:"", sku:"", category:categories[0]?.id||"motorcycle", shortDesc:"", image:"", gallery:[], pdfUrl:"", verifyCode:genCode(), specs:[{key:"",value:""}], compatible:"", featured:false };
+    const [f, setF] = useState(item ? {...item, gallery:[...(item.gallery||[])]} : blank);
+    const addSpec = () => setF({...f, specs:[...f.specs,{key:"",value:""}]});
+    const upSpec = (i,k,v) => { const s=[...f.specs]; s[i]={...s[i],[k]:v}; setF({...f,specs:s}); };
+    const delSpec = i => setF({...f, specs:f.specs.filter((_,x)=>x!==i)});
+    return (
+      <div className="adcard fu" style={{ marginTop:16 }}>
+        <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:17, color:C.white, marginBottom:18 }}>{item?"Edit Product":"Add Product"}</h3>
+        <div className="fgrid">
+          <div className="fg"><label className="lbl">Product Name *</label><input value={f.name} onChange={e=>setF({...f,name:e.target.value})} placeholder="Automor Brake Pad" style={{width:"100%"}} /></div>
+          <div className="fg"><label className="lbl">SKU *</label><input value={f.sku} onChange={e=>setF({...f,sku:e.target.value})} placeholder="ABP-101" style={{width:"100%"}} /></div>
+          <div className="fg"><label className="lbl">Category</label><select value={f.category} onChange={e=>setF({...f,category:e.target.value})} style={{width:"100%"}}>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+          <div style={{ display:"flex", alignItems:"center", gap:10, paddingTop:20 }}>
+            <input type="checkbox" id="feat" checked={f.featured} onChange={e=>setF({...f,featured:e.target.checked})} style={{width:"auto"}} />
+            <label htmlFor="feat" style={{ color:C.sub, fontSize:13 }}>Featured Product</label>
+          </div>
+        </div>
+
+        {/* Verify Code */}
+        <div className="fg" style={{ background:"rgba(232,96,26,0.04)", border:"1px solid rgba(232,96,26,0.18)", borderRadius:4, padding:"14px 16px" }}>
+          <label className="lbl" style={{ color:C.accent }}>🔐 Authenticity Verification Code</label>
+          <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+            <input readOnly value={f.verifyCode||""} style={{ flex:1, fontFamily:"'Space Mono',monospace", color:C.accent, background:C.bg, cursor:"default" }} />
+            <button className="bo bsm" onClick={()=>setF({...f, verifyCode:genCode()})} style={{ flexShrink:0 }}>↻ New Code</button>
+          </div>
+          <p style={{ color:C.muted, fontSize:11, lineHeight:1.6 }}>
+            Verification URL: <span style={{ color:C.sub, fontFamily:"'Space Mono',monospace" }}>yoursite.com/#verify/{f.verifyCode}</span>
+            <br/>This code is printed as a QR code on the product packaging.
+          </p>
+        </div>
+        <div className="fg"><label className="lbl">Short Description *</label><textarea rows={3} value={f.shortDesc} onChange={e=>setF({...f,shortDesc:e.target.value})} placeholder="Brief product description…" style={{width:"100%"}} /></div>
+
+        {/* Main image */}
+        <ImgInput label="Main / Default Image *" val={f.image} set={v=>setF({...f,image:v})} />
+
+        {/* Gallery */}
+        <GalleryInput images={f.gallery} setImages={g=>setF({...f,gallery:g})} />
+
+        {/* PDF */}
+        <PdfInput label="Product Catalog PDF (model-wise)" val={f.pdfUrl} set={v=>setF({...f,pdfUrl:v})} />
+
+        <div className="fg">
+          <label className="lbl">Compatible Models (one per line)</label>
+          <textarea rows={4} value={f.compatible} onChange={e=>setF({...f,compatible:e.target.value})} placeholder={"Honda CB 150\nYamaha FZS"} style={{width:"100%"}} />
+        </div>
+        <div className="fg">
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+            <label className="lbl" style={{marginBottom:0}}>Technical Specifications</label>
+            <button className="bo bsm" onClick={addSpec}><Ic.Plus /> Add Row</button>
+          </div>
+          {f.specs.map((s,i)=>(
+            <div key={i} style={{ display:"flex", gap:8, marginBottom:8, alignItems:"center" }}>
+              <input value={s.key} onChange={e=>upSpec(i,"key",e.target.value)} placeholder="Key" style={{flex:1}} />
+              <input value={s.value} onChange={e=>upSpec(i,"value",e.target.value)} placeholder="Value" style={{flex:1}} />
+              <button onClick={()=>delSpec(i)} style={{color:C.red}}><Ic.Trash /></button>
+            </div>
+          ))}
+        </div>
+        <div style={{ display:"flex", gap:10, marginTop:6 }}>
+          <button className="bp" onClick={()=>onSave(f)}>Save Product</button>
+          <button className="bo" onClick={onCancel}>Cancel</button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── BLOG FORM ── */
+  function BlogForm({ item, onSave, onCancel }) {
+    const blank = { id:Date.now(), title:"", category:"", date:new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}), readTime:"5 min", excerpt:"", image:"", content:"" };
+    const [f, setF] = useState(item||blank);
+    return (
+      <div className="adcard fu" style={{ marginTop:16 }}>
+        <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:17, color:C.white, marginBottom:18 }}>{item?"Edit Post":"New Post"}</h3>
+        <div className="fgrid">
+          <div className="fg"><label className="lbl">Title *</label><input value={f.title} onChange={e=>setF({...f,title:e.target.value})} style={{width:"100%"}} /></div>
+          <div className="fg"><label className="lbl">Category</label><input value={f.category} onChange={e=>setF({...f,category:e.target.value})} placeholder="Technical" style={{width:"100%"}} /></div>
+          <div className="fg"><label className="lbl">Date</label><input value={f.date} onChange={e=>setF({...f,date:e.target.value})} style={{width:"100%"}} /></div>
+          <div className="fg"><label className="lbl">Read Time</label><input value={f.readTime} onChange={e=>setF({...f,readTime:e.target.value})} placeholder="5 min" style={{width:"100%"}} /></div>
+        </div>
+        <ImgInput label="Cover Image" val={f.image} set={v=>setF({...f,image:v})} />
+        <div className="fg"><label className="lbl">Excerpt</label><textarea rows={2} value={f.excerpt} onChange={e=>setF({...f,excerpt:e.target.value})} style={{width:"100%"}} /></div>
+        <div className="fg"><label className="lbl">Full Content (use blank line for new paragraph)</label><textarea rows={7} value={f.content} onChange={e=>setF({...f,content:e.target.value})} style={{width:"100%"}} /></div>
+        <div style={{ display:"flex", gap:10 }}>
+          <button className="bp" onClick={()=>onSave(f)}>Save Post</button>
+          <button className="bo" onClick={onCancel}>Cancel</button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── SIDEBAR NAV ── */
+  const navItems = [
+    ["dashboard","Dashboard",<Ic.Dash />],
+    ["header","Header & Logo",<Ic.Link />],
+    ["homepage","Homepage Sections",<Ic.Home />],
+    ["products","Products",<Ic.Pkg />],
+    ["qrcodes","QR & Verify Codes",<Ic.Key />],
+    ["categories","Categories",<Ic.Pkg />],
+    ["blog","Blog Posts",<Ic.Blog />],
+    ["faq","FAQ",<Ic.Blog />],
+    ["footer","Footer",<Ic.Settings />],
+    ["seo","SEO Settings",<Ic.Seo />],
+    ["brand","Contact & Brand",<Ic.Settings />],
+    ["inquiries","Inquiries",<Ic.Inbox />],
+  ];
+
+  /* ── RENDER CONTENT ── */
+  const renderTab = () => {
+    /* DASHBOARD */
+    if (tab==="dashboard") return (
+      <div>
+        <Hdr title="Dashboard" />
+        <div className="gcap" style={{ marginBottom:24 }}>
+          {[["Products",products.length,C.accent],["Categories",categories.length,C.blue],["Blog Posts",blog.length,"#a78bfa"],["FAQ Items",faq.length,"#34d399"],["Inquiries",inquiries.length,"#f59e0b"]].map(([l,v,col])=>(
+            <div key={l} className="adcard" style={{ display:"flex", flexDirection:"column", gap:6, borderTop:`2px solid ${col}` }}>
+              <span style={{ fontFamily:"'Space Mono',monospace", fontSize:28, fontWeight:700, color:col }}>{v}</span>
+              <span style={{ color:C.sub, fontSize:12 }}>{l}</span>
+            </div>
+          ))}
+        </div>
+        <div className="adcard" style={{ marginBottom:16 }}>
+          <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:16, color:C.white, marginBottom:14 }}>Quick Actions</h3>
+          <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+            <button className="bo bsm" onClick={()=>sf("products",null)}><Ic.Plus /> Add Product</button>
+            <button className="bo bsm" onClick={()=>sf("blog",null)}><Ic.Plus /> New Blog Post</button>
+            <button className="bo bsm" onClick={()=>sf("faq",null)}><Ic.Plus /> New FAQ</button>
+            <button className="bo bsm" onClick={()=>sf("header")}><Ic.Settings /> Edit Header</button>
+            <button className="bo bsm" onClick={()=>sf("seo")}><Ic.Seo /> SEO Settings</button>
+          </div>
+        </div>
+        <div className="adcard" style={{ background:"rgba(232,96,26,0.05)", border:"1px solid rgba(232,96,26,0.2)" }}>
+          <p style={{ color:C.sub, fontSize:13, lineHeight:1.7, marginBottom:12 }}>
+            🔒 <strong style={{color:C.white}}>Admin Access Methods — Keep Private</strong>
+          </p>
+          <div style={{ marginBottom:10 }}>
+            <p style={{ color:C.muted, fontSize:10, letterSpacing:1.5, textTransform:"uppercase", fontFamily:"'Space Mono',monospace", marginBottom:5 }}>Method 1 — Live Website URL</p>
+            <div style={{ background:C.el, border:`1px solid ${C.border}`, borderRadius:3, padding:"8px 12px", fontFamily:"'Space Mono',monospace", fontSize:12, color:C.white }}>
+              https://yoursite.com/<span style={{color:C.accent}}>#admin</span>
+            </div>
+          </div>
+          <div style={{ marginBottom:12 }}>
+            <p style={{ color:C.muted, fontSize:10, letterSpacing:1.5, textTransform:"uppercase", fontFamily:"'Space Mono',monospace", marginBottom:5 }}>Method 2 — Keyboard Shortcut (preview/iframe)</p>
+            <div style={{ background:C.el, border:`1px solid ${C.border}`, borderRadius:3, padding:"8px 12px", fontFamily:"'Space Mono',monospace", fontSize:12, color:C.white, display:"flex", gap:8 }}>
+              <span style={{color:C.accent}}>Ctrl+Shift+A</span><span style={{color:C.muted}}>Windows/Linux</span>
+              <span style={{color:C.border}}>|</span>
+              <span style={{color:C.accent}}>Cmd+Shift+A</span><span style={{color:C.muted}}>Mac</span>
+            </div>
+          </div>
+          <p style={{ color:C.sub, fontSize:12, lineHeight:1.8 }}>
+            ✓ Zero public links, buttons, or text on the website<br/>
+            ✓ <code style={{color:C.accent,fontFamily:"'Space Mono',monospace"}}>#admin</code> erased from address bar instantly — no trace<br/>
+            ✓ Wrong password 3× → 30-second lockout
+          </p>
+        </div>
+      </div>
+    );
+
+    /* HEADER SETTINGS */
+    if (tab==="header") {
+      const [f, setF] = useState({...header, navLinks:[...header.navLinks]});
+      const [saved, setSaved] = useState(false);
+      const save = () => { setHeader(f); setSaved(true); setTimeout(()=>setSaved(false),2000); };
+      const addLink = () => setF({...f, navLinks:[...f.navLinks,{id:Date.now(),label:"New Page",page:"contact"}]});
+      const upLink = (i,k,v) => { const nl=[...f.navLinks]; nl[i]={...nl[i],[k]:v}; setF({...f,navLinks:nl}); };
+      const delLink = i => setF({...f, navLinks:f.navLinks.filter((_,x)=>x!==i)});
+      return (
+        <div>
+          <Hdr title="Header & Navigation" action={<SaveBtn onSave={save} saved={saved} />} />
+          <div className="adcard" style={{ marginBottom:16 }}>
+            <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:15, color:C.white, marginBottom:16 }}>Logo</h3>
+            <ImgInput label="Logo Image (upload SVG/PNG, or paste URL)" val={f.logo} set={v=>setF({...f,logo:v})} />
+            <div className="fg"><label className="lbl">Logo Text (shown if no image uploaded)</label><input value={f.logoText} onChange={e=>setF({...f,logoText:e.target.value})} style={{width:"100%"}} /></div>
+          </div>
+          <div className="adcard" style={{ marginBottom:16 }}>
+            <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:15, color:C.white, marginBottom:16 }}>Navigation Links</h3>
+            {f.navLinks.map((l,i)=>(
+              <div key={l.id} style={{ display:"flex", gap:8, marginBottom:10, alignItems:"center" }}>
+                <input value={l.label} onChange={e=>upLink(i,"label",e.target.value)} placeholder="Label" style={{flex:1}} />
+                <input value={l.page} onChange={e=>upLink(i,"page",e.target.value)} placeholder="page key (e.g. about)" style={{flex:1}} />
+                <button onClick={()=>delLink(i)} style={{color:C.red,flexShrink:0}}><Ic.Trash /></button>
+              </div>
+            ))}
+            <button className="bo bsm" onClick={addLink} style={{marginTop:6}}><Ic.Plus /> Add Link</button>
+          </div>
+          <div className="adcard">
+            <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:15, color:C.white, marginBottom:16 }}>CTA Button</h3>
+            <div className="fgrid">
+              <div className="fg"><label className="lbl">Button Text</label><input value={f.ctaText} onChange={e=>setF({...f,ctaText:e.target.value})} style={{width:"100%"}} /></div>
+              <div className="fg"><label className="lbl">Target Page</label><input value={f.ctaPage} onChange={e=>setF({...f,ctaPage:e.target.value})} style={{width:"100%"}} /></div>
+            </div>
+          </div>
+          <div style={{marginTop:16}}><SaveBtn onSave={save} saved={saved} /></div>
+        </div>
+      );
+    }
+
+    /* HOMEPAGE SECTIONS */
+    if (tab==="homepage") {
+      const [f, setF] = useState(JSON.parse(JSON.stringify(homeData)));
+      const [saved, setSaved] = useState(false);
+      const save = () => { setHomeData(f); setSaved(true); setTimeout(()=>setSaved(false),2000); };
+      const upWhy = (i,k,v) => { const items=[...f.why.items]; items[i]={...items[i],[k]:v}; setF({...f,why:{...f.why,items}}); };
+      const upTrust = (i,v) => { const t=[...f.trust]; t[i]={...t[i],text:v}; setF({...f,trust:t}); };
+      return (
+        <div>
+          <Hdr title="Homepage Sections" action={<SaveBtn onSave={save} saved={saved} />} />
+          {/* Hero */}
+          <div className="adcard" style={{ marginBottom:14 }}>
+            <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:15, color:C.white, marginBottom:16 }}>🏠 Hero Section</h3>
+            <ImgInput label="Hero Background Image" val={f.hero.bgImage} set={v=>setF({...f,hero:{...f.hero,bgImage:v}})} />
+            <div className="fg"><label className="lbl">Badge Text</label><input value={f.hero.badge} onChange={e=>setF({...f,hero:{...f.hero,badge:e.target.value}})} style={{width:"100%"}} /></div>
+            <div className="fg"><label className="lbl">Headline (use \n for line breaks)</label><textarea rows={4} value={f.hero.headline} onChange={e=>setF({...f,hero:{...f.hero,headline:e.target.value}})} style={{width:"100%"}} /></div>
+            <div className="fg"><label className="lbl">Sub-text</label><input value={f.hero.subtext} onChange={e=>setF({...f,hero:{...f.hero,subtext:e.target.value}})} style={{width:"100%"}} /></div>
+            <div className="fgrid">
+              <div className="fg"><label className="lbl">Button 1 Text</label><input value={f.hero.btn1Text} onChange={e=>setF({...f,hero:{...f.hero,btn1Text:e.target.value}})} style={{width:"100%"}} /></div>
+              <div className="fg"><label className="lbl">Button 2 Text</label><input value={f.hero.btn2Text} onChange={e=>setF({...f,hero:{...f.hero,btn2Text:e.target.value}})} style={{width:"100%"}} /></div>
+            </div>
+            <PdfInput label="Homepage Catalog PDF (full catalog download)" val={f.hero.catalogPDF} set={v=>setF({...f,hero:{...f.hero,catalogPDF:v}})} />
+          </div>
+          {/* Trust strip */}
+          <div className="adcard" style={{ marginBottom:14 }}>
+            <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:15, color:C.white, marginBottom:16 }}>✅ Trust Strip</h3>
+            {f.trust.map((t,i)=>(
+              <div key={i} className="fg"><label className="lbl">Item {i+1}</label><input value={t.text} onChange={e=>upTrust(i,e.target.value)} style={{width:"100%"}} /></div>
+            ))}
+          </div>
+          {/* Why section */}
+          <div className="adcard" style={{ marginBottom:14 }}>
+            <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:15, color:C.white, marginBottom:16 }}>⭐ Why Automor Section</h3>
+            <div className="fgrid">
+              <div className="fg"><label className="lbl">Label</label><input value={f.why.label} onChange={e=>setF({...f,why:{...f.why,label:e.target.value}})} style={{width:"100%"}} /></div>
+              <div className="fg"><label className="lbl">Title</label><input value={f.why.title} onChange={e=>setF({...f,why:{...f.why,title:e.target.value}})} style={{width:"100%"}} /></div>
+            </div>
+            {f.why.items.map((item,i)=>(
+              <div key={i} style={{ border:`1px solid ${C.border}`, borderRadius:3, padding:12, marginBottom:10 }}>
+                <div className="fg"><label className="lbl">Card {i+1} Title</label><input value={item.title} onChange={e=>upWhy(i,"title",e.target.value)} style={{width:"100%"}} /></div>
+                <div className="fg"><label className="lbl">Card {i+1} Body</label><textarea rows={2} value={item.body} onChange={e=>upWhy(i,"body",e.target.value)} style={{width:"100%"}} /></div>
+              </div>
+            ))}
+          </div>
+          {/* CTA Banner */}
+          <div className="adcard" style={{ marginBottom:14 }}>
+            <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:15, color:C.white, marginBottom:16 }}>📣 CTA Banner</h3>
+            <div className="fg"><label className="lbl">Headline</label><textarea rows={2} value={f.cta.title} onChange={e=>setF({...f,cta:{...f.cta,title:e.target.value}})} style={{width:"100%"}} /></div>
+            <div className="fg"><label className="lbl">Body Text</label><textarea rows={2} value={f.cta.body} onChange={e=>setF({...f,cta:{...f.cta,body:e.target.value}})} style={{width:"100%"}} /></div>
+          </div>
+          <SaveBtn onSave={save} saved={saved} />
+        </div>
+      );
+    }
+
+    /* PRODUCTS */
+    if (tab==="products") return (
+      <div>
+        <Hdr title={`Products (${products.length})`} action={<button className="bp bsm" onClick={()=>{setShowForm(!showForm);setEditItem(null);}}><Ic.Plus /> Add Product</button>} />
+        {showForm && <ProdForm item={editItem} onSave={p=>{ if(editItem) setProducts(products.map(x=>x.id===p.id?p:x)); else setProducts([...products,p]); setShowForm(false); setEditItem(null); }} onCancel={()=>{setShowForm(false);setEditItem(null);}} />}
+        <div style={{ overflowX:"auto" }}>
+          <table className="adtbl">
+            <thead><tr><th>Product</th><th>SKU</th><th>Category</th><th>Images</th><th>PDF</th><th>Featured</th><th>Actions</th></tr></thead>
+            <tbody>
+              {products.map(p=>(
+                <tr key={p.id}>
+                  <td>
+                    <div style={{ display:"flex", gap:9, alignItems:"center" }}>
+                      <div style={{ width:36, height:36, borderRadius:3, overflow:"hidden", background:C.el, flexShrink:0 }}>
+                        <img src={p.image} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                      </div>
+                      <span style={{ color:C.white, fontWeight:500 }}>{p.name}</span>
+                    </div>
+                  </td>
+                  <td><span className="sku">{p.sku}</span></td>
+                  <td style={{ color:C.sub }}>{categories.find(c=>c.id===p.category)?.name||p.category}</td>
+                  <td><span className="bgray">{(p.gallery||[]).length} imgs</span></td>
+                  <td>{p.pdfUrl?<span className="bgrn2">PDF ✓</span>:<span className="bgray">—</span>}</td>
+                  <td>{p.featured?<span className="bgrn2">★ Yes</span>:<span className="bgray">—</span>}</td>
+                  <td>
+                    <div style={{ display:"flex", gap:5 }}>
+                      <button className="bo bsm" onClick={()=>{setEditItem(p);setShowForm(true);}}><Ic.Edit /></button>
+                      <button className="bo bsm bred" onClick={()=>{if(window.confirm(`Delete "${p.name}"?`))setProducts(products.filter(x=>x.id!==p.id));}}><Ic.Trash /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+
+    /* CATEGORIES */
+    if (tab==="categories") {
+      const [editCat, setEditCat] = useState(null);
+      return (
+        <div>
+          <Hdr title={`Categories (${categories.length})`} />
+          {editCat && (
+            <div className="adcard fu" style={{ marginBottom:16 }}>
+              <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:16, color:C.white, marginBottom:16 }}>Edit Category: {editCat.name}</h3>
+              <div className="fgrid">
+                <div className="fg"><label className="lbl">Category Name</label><input value={editCat.name} onChange={e=>setEditCat({...editCat,name:e.target.value})} style={{width:"100%"}} /></div>
+                <div className="fg"><label className="lbl">Product Count (display)</label><input type="number" value={editCat.count} onChange={e=>setEditCat({...editCat,count:parseInt(e.target.value)||0})} style={{width:"100%"}} /></div>
+              </div>
+              <div className="fg"><label className="lbl">Description</label><textarea rows={2} value={editCat.description} onChange={e=>setEditCat({...editCat,description:e.target.value})} style={{width:"100%"}} /></div>
+              <ImgInput label="Category Card Image" val={editCat.image} set={v=>setEditCat({...editCat,image:v})} />
+              <div style={{ display:"flex", gap:10, marginTop:6 }}>
+                <button className="bp" onClick={()=>{setCategories(categories.map(c=>c.id===editCat.id?editCat:c));setEditCat(null);}}>Save Category</button>
+                <button className="bo" onClick={()=>setEditCat(null)}>Cancel</button>
+              </div>
+            </div>
+          )}
+          <div style={{ overflowX:"auto" }}>
+            <table className="adtbl">
+              <thead><tr><th>Category</th><th>ID</th><th>Products</th><th>Actions</th></tr></thead>
+              <tbody>
+                {categories.map(cat=>(
+                  <tr key={cat.id}>
+                    <td><div style={{ display:"flex", gap:9, alignItems:"center" }}><div style={{ width:40, height:40, borderRadius:3, overflow:"hidden", background:C.el, flexShrink:0 }}><img src={cat.image} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }} /></div><span style={{ color:C.white, fontWeight:500 }}>{cat.name}</span></div></td>
+                    <td><span className="sku">{cat.id}</span></td>
+                    <td style={{ color:C.sub }}>{products.filter(p=>p.category===cat.id).length}</td>
+                    <td><button className="bo bsm" onClick={()=>setEditCat({...cat})}><Ic.Edit /> Edit</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    }
+
+    /* QR & VERIFY CODES */
+    if (tab==="qrcodes") {
+      const [domain, setDomain] = useState("https://yoursite.com");
+      const [copied, setCopied] = useState(null);
+      const copyUrl = (code) => {
+        navigator.clipboard?.writeText(`${domain}/#verify/${code}`);
+        setCopied(code); setTimeout(()=>setCopied(null),2000);
+      };
+      return (
+        <div>
+          <Hdr title={`Authenticity QR Codes (${products.length} products)`} />
+          <div className="adcard" style={{ marginBottom:16, background:"rgba(232,96,26,0.05)", border:"1px solid rgba(232,96,26,0.2)" }}>
+            <p style={{ color:C.sub, fontSize:13, lineHeight:1.7, marginBottom:12 }}>
+              Each product has a unique QR code. Print it on the product packaging.
+              When a customer scans it, they see the <strong style={{color:C.white}}>Product Authenticity Verification</strong> page — confirming the product is genuine.
+            </p>
+            <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+              <label className="lbl" style={{ marginBottom:0, flexShrink:0 }}>Your Domain:</label>
+              <input value={domain} onChange={e=>setDomain(e.target.value)} placeholder="https://yoursite.com" style={{ flex:1, maxWidth:320 }} />
+            </div>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))", gap:16 }}>
+            {products.map(p => (
+              <div key={p.id} className="adcard" style={{ display:"flex", flexDirection:"column", gap:0 }}>
+                {/* Product header */}
+                <div style={{ display:"flex", gap:10, alignItems:"center", marginBottom:14, paddingBottom:14, borderBottom:`1px solid ${C.border}` }}>
+                  <div style={{ width:42, height:42, borderRadius:3, overflow:"hidden", background:C.el, flexShrink:0 }}>
+                    <img src={p.image} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                  </div>
+                  <div>
+                    <p style={{ color:C.white, fontWeight:600, fontSize:13, lineHeight:1.3 }}>{p.name}</p>
+                    <span className="sku">{p.sku}</span>
+                  </div>
+                </div>
+                {/* QR Code image */}
+                <div style={{ background:"#ffffff", borderRadius:4, padding:12, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:12 }}>
+                  <img
+                    src={qrImgUrl(p.verifyCode||p.sku, 180)}
+                    alt="QR Code"
+                    style={{ width:180, height:180, display:"block" }}
+                    onError={e=>{ e.target.style.display="none"; e.target.nextSibling.style.display="flex"; }}
+                  />
+                  <div style={{ display:"none", width:180, height:180, alignItems:"center", justifyContent:"center", color:C.muted, fontSize:12, flexDirection:"column", gap:8 }}>
+                    <Ic.Key /><span>QR loads on live site</span>
+                  </div>
+                </div>
+                {/* Verify code */}
+                <div style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:3, padding:"8px 10px", marginBottom:10 }}>
+                  <p style={{ color:C.muted, fontSize:9, fontFamily:"'Space Mono',monospace", letterSpacing:1.5, textTransform:"uppercase", marginBottom:4 }}>Verification Code</p>
+                  <p style={{ color:C.accent, fontFamily:"'Space Mono',monospace", fontSize:13, fontWeight:700, letterSpacing:1 }}>{p.verifyCode||p.sku}</p>
+                </div>
+                {/* URL */}
+                <div style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:3, padding:"8px 10px", marginBottom:12, wordBreak:"break-all", fontSize:11, fontFamily:"'Space Mono',monospace", color:C.sub }}>
+                  {domain}/#verify/<span style={{ color:C.accent }}>{p.verifyCode||p.sku}</span>
+                </div>
+                {/* Actions */}
+                <div style={{ display:"flex", gap:8 }}>
+                  <button className={`bo bsm${copied===p.verifyCode?" bgrn":""}`} style={{ flex:1 }} onClick={()=>copyUrl(p.verifyCode||p.sku)}>
+                    {copied===p.verifyCode?"✓ Copied!":"Copy URL"}
+                  </button>
+                  <a
+                    href={qrImgUrl(p.verifyCode||p.sku, 600)}
+                    download={`QR-${p.sku}.png`}
+                    target="_blank"
+                    className="bo bsm"
+                    style={{ display:"inline-flex", alignItems:"center", gap:5 }}
+                  >
+                    <Ic.Down /> Download
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    /* BLOG */
+    if (tab==="blog") return (
+      <div>
+        <Hdr title={`Blog Posts (${blog.length})`} action={<button className="bp bsm" onClick={()=>{setShowForm(!showForm);setEditItem(null);}}><Ic.Plus /> New Post</button>} />
+        {showForm && <BlogForm item={editItem} onSave={p=>{ if(editItem) setBlog(blog.map(x=>x.id===p.id?p:x)); else setBlog([...blog,p]); setShowForm(false); setEditItem(null); }} onCancel={()=>{setShowForm(false);setEditItem(null);}} />}
+        <div style={{ overflowX:"auto" }}>
+          <table className="adtbl">
+            <thead><tr><th>Title</th><th>Category</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody>
+              {blog.map(post=>(
+                <tr key={post.id}>
+                  <td style={{ color:C.white, fontWeight:500, maxWidth:280 }}>{post.title}</td>
+                  <td><span className="bgray">{post.category}</span></td>
+                  <td style={{ color:C.sub, fontFamily:"'Space Mono',monospace", fontSize:11 }}>{post.date}</td>
+                  <td>
+                    <div style={{ display:"flex", gap:5 }}>
+                      <button className="bo bsm" onClick={()=>{setEditItem(post);setShowForm(true);}}><Ic.Edit /></button>
+                      <button className="bo bsm bred" onClick={()=>{if(window.confirm("Delete?"))setBlog(blog.filter(x=>x.id!==post.id));}}><Ic.Trash /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+
+    /* FAQ */
+    if (tab==="faq") {
+      const [ef, setEf] = useState(null);
+      const [newF, setNewF] = useState(false);
+      const [nf, setNf] = useState({id:Date.now(),q:"",a:""});
+      return (
+        <div>
+          <Hdr title={`FAQ (${faq.length})`} action={<button className="bp bsm" onClick={()=>setNewF(!newF)}><Ic.Plus /> Add FAQ</button>} />
+          {newF && (
+            <div className="adcard fu" style={{ marginBottom:14 }}>
+              <div className="fg"><label className="lbl">Question *</label><input value={nf.q} onChange={e=>setNf({...nf,q:e.target.value})} style={{width:"100%"}} /></div>
+              <div className="fg"><label className="lbl">Answer *</label><textarea rows={4} value={nf.a} onChange={e=>setNf({...nf,a:e.target.value})} style={{width:"100%"}} /></div>
+              <div style={{ display:"flex", gap:10 }}>
+                <button className="bp" onClick={()=>{setFaq([...faq,{...nf,id:Date.now()}]);setNf({id:Date.now(),q:"",a:""});setNewF(false);}}>Add FAQ</button>
+                <button className="bo" onClick={()=>setNewF(false)}>Cancel</button>
+              </div>
+            </div>
+          )}
+          {faq.map((item,i)=>(
+            <div key={item.id} className="adcard fu" style={{ marginBottom:10 }}>
+              {ef===item.id ? (
+                <div>
+                  <div className="fg"><label className="lbl">Question</label><input value={item.q} onChange={e=>setFaq(faq.map(x=>x.id===item.id?{...x,q:e.target.value}:x))} style={{width:"100%"}} /></div>
+                  <div className="fg"><label className="lbl">Answer</label><textarea rows={3} value={item.a} onChange={e=>setFaq(faq.map(x=>x.id===item.id?{...x,a:e.target.value}:x))} style={{width:"100%"}} /></div>
+                  <button className="bp bsm" onClick={()=>setEf(null)}>Done</button>
+                </div>
+              ) : (
+                <div style={{ display:"flex", justifyContent:"space-between", gap:16, alignItems:"flex-start" }}>
+                  <div>
+                    <p style={{ color:C.white, fontWeight:500, fontSize:14, marginBottom:6 }}>{i+1}. {item.q}</p>
+                    <p style={{ color:C.sub, fontSize:13, lineHeight:1.6 }}>{item.a.slice(0,100)}…</p>
+                  </div>
+                  <div style={{ display:"flex", gap:6, flexShrink:0 }}>
+                    <button className="bo bsm" onClick={()=>setEf(item.id)}><Ic.Edit /></button>
+                    <button className="bo bsm bred" onClick={()=>{if(window.confirm("Delete?"))setFaq(faq.filter(x=>x.id!==item.id));}}><Ic.Trash /></button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    /* FOOTER */
+    if (tab==="footer") {
+      const [f, setF] = useState(JSON.parse(JSON.stringify(footer)));
+      const [saved, setSaved] = useState(false);
+      const save = () => { setFooter(f); setSaved(true); setTimeout(()=>setSaved(false),2000); };
+      const upLink = (i,k,v) => { const l=[...f.col3Links]; l[i]={...l[i],[k]:v}; setF({...f,col3Links:l}); };
+      return (
+        <div>
+          <Hdr title="Footer Settings" action={<SaveBtn onSave={save} saved={saved} />} />
+          <div className="adcard" style={{ marginBottom:14 }}>
+            <div className="fg"><label className="lbl">Company Tagline</label><textarea rows={2} value={f.tagline} onChange={e=>setF({...f,tagline:e.target.value})} style={{width:"100%"}} /></div>
+            <div className="fgrid">
+              <div className="fg"><label className="lbl">Copyright Text</label><input value={f.copyright} onChange={e=>setF({...f,copyright:e.target.value})} style={{width:"100%"}} /></div>
+              <div className="fg"><label className="lbl">Certification Text</label><input value={f.certText} onChange={e=>setF({...f,certText:e.target.value})} style={{width:"100%"}} /></div>
+            </div>
+          </div>
+          <div className="adcard">
+            <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:15, color:C.white, marginBottom:14 }}>Company Menu Links</h3>
+            {f.col3Links.map((l,i)=>(
+              <div key={l.id} style={{ display:"flex", gap:8, marginBottom:10, alignItems:"center" }}>
+                <input value={l.label} onChange={e=>upLink(i,"label",e.target.value)} placeholder="Label" style={{flex:1}} />
+                <input value={l.page} onChange={e=>upLink(i,"page",e.target.value)} placeholder="page key" style={{flex:1}} />
+                <button onClick={()=>setF({...f,col3Links:f.col3Links.filter((_,x)=>x!==i)})} style={{color:C.red}}><Ic.Trash /></button>
+              </div>
+            ))}
+            <button className="bo bsm" onClick={()=>setF({...f,col3Links:[...f.col3Links,{id:Date.now(),label:"",page:""}]})}><Ic.Plus /> Add Link</button>
+          </div>
+          <div style={{marginTop:14}}><SaveBtn onSave={save} saved={saved} /></div>
+        </div>
+      );
+    }
+
+    /* SEO SETTINGS */
+    if (tab==="seo") {
+      const [f, setF] = useState({...seo});
+      const [saved, setSaved] = useState(false);
+      const save = () => { setSeo(f); setSaved(true); setTimeout(()=>setSaved(false),2000); };
+      return (
+        <div>
+          <Hdr title="SEO Settings" action={<SaveBtn onSave={save} saved={saved} />} />
+          <div className="adcard" style={{ marginBottom:14 }}>
+            <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:15, color:C.white, marginBottom:16 }}>🔍 Basic SEO</h3>
+            <div className="fg"><label className="lbl">Site Title (shown in browser tab & Google)</label><input value={f.siteTitle} onChange={e=>setF({...f,siteTitle:e.target.value})} style={{width:"100%"}} /></div>
+            <div className="fg"><label className="lbl">Meta Description (155–160 chars recommended)</label><textarea rows={3} value={f.metaDesc} onChange={e=>setF({...f,metaDesc:e.target.value})} style={{width:"100%"}} /><p style={{color:C.muted,fontSize:11,marginTop:4}}>{f.metaDesc.length} / 160 chars</p></div>
+            <div className="fg"><label className="lbl">Meta Keywords (comma separated)</label><input value={f.keywords} onChange={e=>setF({...f,keywords:e.target.value})} style={{width:"100%"}} /></div>
+            <div className="fg"><label className="lbl">Canonical Domain</label><input value={f.canonicalDomain} onChange={e=>setF({...f,canonicalDomain:e.target.value})} placeholder="https://www.automor.com" style={{width:"100%"}} /></div>
+          </div>
+          <div className="adcard" style={{ marginBottom:14 }}>
+            <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:15, color:C.white, marginBottom:16 }}>📱 Open Graph (Social Sharing)</h3>
+            <ImgInput label="OG Image (1200×630px recommended)" val={f.ogImage} set={v=>setF({...f,ogImage:v})} />
+          </div>
+          <div className="adcard" style={{ marginBottom:14 }}>
+            <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:15, color:C.white, marginBottom:16 }}>📊 Google Integration</h3>
+            <div className="fgrid">
+              <div className="fg"><label className="lbl">Google Analytics ID</label><input value={f.googleAnalyticsId} onChange={e=>setF({...f,googleAnalyticsId:e.target.value})} placeholder="G-XXXXXXXXXX" style={{width:"100%"}} /></div>
+              <div className="fg"><label className="lbl">Google Search Console Verification</label><input value={f.googleVerification} onChange={e=>setF({...f,googleVerification:e.target.value})} placeholder="Verification code" style={{width:"100%"}} /></div>
+            </div>
+          </div>
+          <div className="adcard" style={{ marginBottom:14 }}>
+            <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:15, color:C.white, marginBottom:16 }}>🤖 Robots & Indexing</h3>
+            <div className="fg"><label className="lbl">Robots Directive</label>
+              <select value={f.robots} onChange={e=>setF({...f,robots:e.target.value})} style={{width:"100%"}}>
+                <option value="index, follow">index, follow (recommended)</option>
+                <option value="noindex, nofollow">noindex, nofollow (hide from Google)</option>
+                <option value="index, nofollow">index, nofollow</option>
+              </select>
+            </div>
+          </div>
+          <div className="adcard" style={{ background:"rgba(96,165,250,0.05)", border:"1px solid rgba(96,165,250,0.2)", marginBottom:14 }}>
+            <h3 style={{ color:C.blue, fontSize:14, fontWeight:600, marginBottom:10 }}>ℹ️ SEO Implementation Note</h3>
+            <p style={{ color:C.sub, fontSize:13, lineHeight:1.7 }}>
+              In this React SPA, SEO tags are stored and ready to export. For production deployment on Hostinger, these values are injected into the <code style={{color:C.accent,background:C.el,padding:"1px 4px",borderRadius:2}}>&lt;head&gt;</code> of your HTML file or via a framework like Next.js for full server-side rendering and Google crawlability.
+            </p>
+          </div>
+          <SaveBtn onSave={save} saved={saved} />
+        </div>
+      );
+    }
+
+    /* BRAND / CONTACT */
+    if (tab==="brand") {
+      const [f, setF] = useState({...brand});
+      const [saved, setSaved] = useState(false);
+      const save = () => { setBrand(f); setSaved(true); setTimeout(()=>setSaved(false),2000); };
+      return (
+        <div>
+          <Hdr title="Contact & Brand Info" action={<SaveBtn onSave={save} saved={saved} />} />
+          <div className="adcard" style={{ marginBottom:14 }}>
+            <div className="fgrid">
+              <div className="fg"><label className="lbl">Brand Name</label><input value={f.name} onChange={e=>setF({...f,name:e.target.value})} style={{width:"100%"}} /></div>
+              <div className="fg"><label className="lbl">Email</label><input value={f.email} onChange={e=>setF({...f,email:e.target.value})} style={{width:"100%"}} /></div>
+              <div className="fg"><label className="lbl">Phone</label><input value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} style={{width:"100%"}} /></div>
+              <div className="fg"><label className="lbl">Address</label><input value={f.address} onChange={e=>setF({...f,address:e.target.value})} style={{width:"100%"}} /></div>
+            </div>
+          </div>
+          <div className="adcard" style={{ marginBottom:14 }}>
+            <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:15, color:C.white, marginBottom:14 }}>Social Media Links</h3>
+            <div className="fgrid">
+              {["linkedin","twitter","youtube","instagram"].map(k=>(
+                <div key={k} className="fg"><label className="lbl">{k.charAt(0).toUpperCase()+k.slice(1)} URL</label><input value={f.social?.[k]||""} onChange={e=>setF({...f,social:{...f.social,[k]:e.target.value}})} placeholder="https://…" style={{width:"100%"}} /></div>
+              ))}
+            </div>
+          </div>
+          <div className="adcard" style={{ marginBottom:14 }}>
+            <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:15, color:C.white, marginBottom:14 }}>Stats Strip (Hero section)</h3>
+            {f.stats.map((s,i)=>(
+              <div key={i} style={{ display:"flex", gap:8, marginBottom:10 }}>
+                <input value={s.value} onChange={e=>{ const st=[...f.stats]; st[i]={...st[i],value:e.target.value}; setF({...f,stats:st}); }} placeholder="Value (e.g. 6,000+)" style={{flex:1}} />
+                <input value={s.label} onChange={e=>{ const st=[...f.stats]; st[i]={...st[i],label:e.target.value}; setF({...f,stats:st}); }} placeholder="Label (e.g. SKUs Available)" style={{flex:1}} />
+              </div>
+            ))}
+          </div>
+          <SaveBtn onSave={save} saved={saved} />
+        </div>
+      );
+    }
+
+    /* INQUIRIES */
+    if (tab==="inquiries") return (
+      <div>
+        <Hdr title={`Inquiries (${inquiries.length})`} />
+        {inquiries.length===0
+          ? <div className="adcard" style={{ textAlign:"center", padding:40 }}><Ic.Inbox /><p style={{ color:C.sub, marginTop:12 }}>No inquiries received yet.</p></div>
+          : <div style={{ overflowX:"auto" }}><table className="adtbl">
+              <thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Time</th><th>Message</th></tr></thead>
+              <tbody>
+                {[...inquiries].reverse().map((inq,i)=>(
+                  <tr key={i}>
+                    <td style={{ color:C.white, fontWeight:500 }}>{inq.name}</td>
+                    <td style={{ color:C.sub }}>{inq.email}</td>
+                    <td style={{ color:C.sub }}>{inq.company||"—"}</td>
+                    <td style={{ color:C.muted, fontFamily:"'Space Mono',monospace", fontSize:10 }}>{inq.time}</td>
+                    <td style={{ color:C.sub, maxWidth:200 }}><div style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{inq.message}</div></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    );
+  };
+
+  return (
+    <div className="adlay">
+      <GS />
+      <div className="adside">
+        <div style={{ padding:isMob?"10px 10px 0":"16px 16px 10px", borderBottom:`1px solid #1e1e21`, display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+          <div style={{ width:26, height:26, background:C.accent, display:"flex", alignItems:"center", justifyContent:"center", clipPath:"polygon(0 0,100% 0,100% 72%,72% 100%,0 100%)", flexShrink:0 }}>
+            <span style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:12, color:"#fff" }}>A</span>
+          </div>
+          {!isMob && <span style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:13, color:C.white, letterSpacing:2 }}>CMS ADMIN</span>}
+        </div>
+        <nav style={{ flex:1, paddingTop:isMob?0:6, display:isMob?"flex":"block", overflowX:isMob?"auto":"visible" }}>
+          {navItems.map(([id,label,icon])=>(
+            <button key={id} className={`adnav${tab===id?" on":""}`} onClick={()=>{setTab(id);setShowForm(false);setEditItem(null);}}>
+              <span>{icon}</span><span>{label}</span>
+            </button>
+          ))}
+        </nav>
+        {!isMob && (
+          <div style={{ padding:"10px 14px", borderTop:`1px solid #1e1e21` }}>
+            <button className="bo bsm bfull" onClick={onExit}>← Exit Admin</button>
+          </div>
+        )}
+      </div>
+      <div className="admain">
+        <div style={{ padding:isMob?"16px 14px":"26px 30px" }}>
+          {isMob && <div style={{ display:"flex", justifyContent:"flex-end", marginBottom:14 }}><button className="bo bsm" onClick={onExit}>← Exit Admin</button></div>}
+          {renderTab()}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── HEADER ──────────────────────────────────────────────── */
+function Header({ nav, page, header, brand }) {
+  const [mOpen, setMOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => { const h = () => setScrolled(window.scrollY > 10); window.addEventListener("scroll", h); return () => window.removeEventListener("scroll", h); }, []);
+  const active = p => page===p || (p==="categories" && ["categories","products","product"].includes(page));
+  return (
+    <header style={{ position:"fixed", top:0, left:0, right:0, zIndex:1000, background:scrolled?"rgba(8,8,9,0.97)":"transparent", borderBottom:scrolled?`1px solid ${C.border}`:"1px solid transparent", backdropFilter:scrolled?"blur(14px)":"none", transition:"all 0.3s" }}>
+      <div className="mw" style={{ padding:"0 20px", display:"flex", alignItems:"center", justifyContent:"space-between", height:60 }}>
+        <button onClick={()=>{nav("home");setMOpen(false);}} style={{ display:"flex", alignItems:"center", gap:9 }}>
+          {header.logo
+            ? <img src={header.logo} alt={header.logoText} style={{ height:36, maxWidth:120, objectFit:"contain" }} />
+            : <><div style={{ width:30, height:30, background:C.accent, display:"flex", alignItems:"center", justifyContent:"center", clipPath:"polygon(0 0,100% 0,100% 72%,72% 100%,0 100%)" }}><span style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:14, color:"#fff" }}>{(header.logoText||"A")[0]}</span></div>
+               <span style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:18, color:C.white, letterSpacing:3 }}>{header.logoText}</span></>
+          }
+        </button>
+        <nav className="nd">
+          {header.navLinks.map(l=>(
+            <button key={l.id} onClick={()=>nav(l.page)} style={{ color:active(l.page)?C.accent:C.sub, fontSize:13, fontWeight:500, padding:"7px 12px", borderRadius:3, transition:"color 0.2s" }} onMouseEnter={e=>{if(!active(l.page))e.target.style.color=C.text;}} onMouseLeave={e=>{if(!active(l.page))e.target.style.color=C.sub;}}>{l.label}</button>
+          ))}
+          <div style={{ width:1, height:18, background:C.border, margin:"0 8px" }} />
+          <button className="bp dcta" style={{ padding:"9px 18px", fontSize:12 }} onClick={()=>nav(header.ctaPage)}>{header.ctaText}</button>
+        </nav>
+        <button className="nmb" onClick={()=>setMOpen(!mOpen)}>{mOpen?<Ic.X />:<Ic.Menu />}</button>
+      </div>
+      {mOpen && (
+        <div className="fu" style={{ background:C.card, borderTop:`1px solid ${C.border}`, padding:"12px 20px 20px" }}>
+          {header.navLinks.map(l=>(
+            <button key={l.id} onClick={()=>{nav(l.page);setMOpen(false);}} style={{ display:"block", width:"100%", textAlign:"left", color:active(l.page)?C.accent:C.text, fontSize:15, padding:"11px 0", borderBottom:`1px solid ${C.border}` }}>{l.label}</button>
+          ))}
+          <button className="bp bfull" style={{ marginTop:16 }} onClick={()=>{nav(header.ctaPage);setMOpen(false);}}>{header.ctaText}</button>
+        </div>
+      )}
+    </header>
+  );
+}
+
+/* ─── FOOTER ──────────────────────────────────────────────── */
+function Footer({ nav, brand, categories, footer }) {
+  return (
+    <footer style={{ background:"#050506", borderTop:`1px solid ${C.border}`, marginTop:72 }}>
+      <div className="mw spx">
+        <div className="gfooter" style={{ marginBottom:40 }}>
+          <div>
+            <button onClick={()=>nav("home")} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
+              <div style={{ width:26, height:26, background:C.accent, display:"flex", alignItems:"center", justifyContent:"center", clipPath:"polygon(0 0,100% 0,100% 72%,72% 100%,0 100%)" }}><span style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:12, color:"#fff" }}>{brand.name[0]}</span></div>
+              <span style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:17, color:C.white, letterSpacing:3 }}>{brand.name}</span>
+            </button>
+            <p style={{ color:C.sub, fontSize:12, lineHeight:1.75, marginBottom:18 }}>{footer.tagline}</p>
+            <div style={{ display:"flex", gap:8 }}>
+              {[[<Ic.Li />,brand.social?.linkedin],[<Ic.Tw />,brand.social?.twitter],[<Ic.Yt />,brand.social?.youtube],[<Ic.Ig />,brand.social?.instagram]].map(([icon,href],i)=>(
+                <a key={i} href={href||"#"} style={{ width:30, height:30, background:C.el, border:`1px solid ${C.border}`, borderRadius:3, display:"flex", alignItems:"center", justifyContent:"center", color:C.sub, transition:"color 0.2s,border-color 0.2s" }} onMouseEnter={e=>{e.currentTarget.style.color=C.accent;e.currentTarget.style.borderColor=C.accent;}} onMouseLeave={e=>{e.currentTarget.style.color=C.sub;e.currentTarget.style.borderColor=C.border;}}>{icon}</a>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h4 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:11, color:C.white, letterSpacing:2.5, textTransform:"uppercase", marginBottom:14 }}>Products</h4>
+            {categories.map(c=><button key={c.id} onClick={()=>nav("products",{cat:c.id})} style={{ display:"block", color:C.sub, fontSize:12, padding:"4px 0", textAlign:"left", transition:"color 0.2s" }} onMouseEnter={e=>e.target.style.color=C.accent} onMouseLeave={e=>e.target.style.color=C.sub}>{c.name}</button>)}
+          </div>
+          <div>
+            <h4 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:11, color:C.white, letterSpacing:2.5, textTransform:"uppercase", marginBottom:14 }}>{footer.col3Title}</h4>
+            {footer.col3Links.map(l=><button key={l.id} onClick={()=>nav(l.page)} style={{ display:"block", color:C.sub, fontSize:12, padding:"4px 0", textAlign:"left", transition:"color 0.2s" }} onMouseEnter={e=>e.target.style.color=C.accent} onMouseLeave={e=>e.target.style.color=C.sub}>{l.label}</button>)}
+          </div>
+          <div>
+            <h4 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:11, color:C.white, letterSpacing:2.5, textTransform:"uppercase", marginBottom:14 }}>Contact</h4>
+            {[[<Ic.Mail />,brand.email],[<Ic.Phone />,brand.phone],[<Ic.Pin />,brand.address]].map(([icon,text],i)=>(
+              <div key={i} style={{ display:"flex", gap:8, alignItems:"flex-start", marginBottom:10, color:C.sub }}>
+                <span style={{ color:C.accent, marginTop:1, flexShrink:0 }}>{icon}</span>
+                <span style={{ fontSize:12, lineHeight:1.5 }}>{text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="divider" style={{ marginBottom:20 }} />
+        <div style={{ display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:8 }}>
+          <p style={{ color:C.muted, fontSize:11 }}>{footer.copyright}</p>
+          <p style={{ color:C.muted, fontSize:11 }}>{footer.certText}</p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ─── PRODUCT CARD ────────────────────────────────────────── */
+function PCard({ p, nav }) {
+  return (
+    <div className="ch" onClick={()=>nav("product",{product:p.id})} style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:4, overflow:"hidden", cursor:"pointer" }} onMouseEnter={e=>e.currentTarget.style.borderColor="rgba(232,96,26,0.38)"} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
+      <div style={{ height:178, overflow:"hidden", position:"relative", background:C.el }}>
+        <img src={p.image||"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400"} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover", transition:"transform 0.4s" }} onMouseEnter={e=>e.target.style.transform="scale(1.05)"} onMouseLeave={e=>e.target.style.transform="scale(1)"} />
+        <div style={{ position:"absolute", bottom:8, left:8 }}><span className="sku">{p.sku}</span></div>
+        {p.featured&&<div style={{ position:"absolute", top:8, right:8, color:"#f59e0b" }}><Ic.Star /></div>}
+      </div>
+      <div style={{ padding:"14px 16px" }}>
+        <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:600, fontSize:15, color:C.white, marginBottom:6, lineHeight:1.3 }}>{p.name}</h3>
+        <p style={{ color:C.sub, fontSize:12, lineHeight:1.6, marginBottom:11 }}>{p.shortDesc.slice(0,75)}…</p>
+        <div style={{ color:C.accent, fontSize:12, display:"flex", alignItems:"center", gap:5, fontWeight:500 }}>View Specs <Ic.Arrow /></div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── PAGE: HOME ──────────────────────────────────────────── */
+function Home({ nav, brand, products, categories, blog, homeData }) {
+  const featured = products.filter(p=>p.featured).slice(0,4);
+  const h = homeData.hero;
+  return (
+    <div style={{ paddingTop:60 }}>
+      {/* HERO */}
+      <section className="gp" style={{ minHeight:"100vh", background:C.bg, display:"flex", alignItems:"center", position:"relative", overflow:"hidden" }}>
+        {h.bgImage && <div style={{ position:"absolute", inset:0, backgroundImage:`url(${h.bgImage})`, backgroundSize:"cover", backgroundPosition:"center", opacity:0.08 }} />}
+        <div style={{ position:"absolute", left:0, top:"18%", bottom:"18%", width:2, background:`linear-gradient(to bottom,transparent,${C.accent},transparent)` }} />
+        <div className="mw sp fu" style={{ position:"relative", zIndex:1, width:"100%" }}>
+          <div style={{ maxWidth:700 }}>
+            <span className="sl">{h.badge}</span>
+            <h1 className="hh1">{h.headline.split("\\n").map((line,i,arr)=><span key={i}>{i===1?<span style={{color:C.accent}}>{line}</span>:line}{i<arr.length-1&&<br/>}</span>)}</h1>
+            <p style={{ fontSize:15, color:C.sub, lineHeight:1.8, maxWidth:480, marginBottom:32 }}>{h.subtext}</p>
+            <div className="hbtns">
+              <button className="bp" onClick={()=>nav(h.btn1Page)}>{h.btn1Text} <Ic.Arrow /></button>
+              <button className="bo" onClick={()=>nav(h.btn2Page)}>{h.btn2Text}</button>
+              {h.catalogPDF && (
+                <a
+                  href={h.catalogPDF}
+                  download
+                  target="_blank"
+                  className="bo"
+                  style={{ borderColor:"rgba(232,96,26,0.3)", color:C.sub, display:"inline-flex", alignItems:"center", gap:7 }}
+                >
+                  <Ic.Down /> {h.catalogBtnText}
+                </a>
+              )}
+            </div>
+            <div className="hstats">
+              {brand.stats.map((s,i)=>(
+                <div key={i}>
+                  <div style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:26, color:C.white }}>{s.value}</div>
+                  <div style={{ color:C.sub, fontSize:10, letterSpacing:1.5, textTransform:"uppercase", marginTop:3 }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div style={{ position:"absolute", bottom:0, left:0, right:0, height:80, background:`linear-gradient(transparent,${C.bg})` }} />
+      </section>
+
+      {/* TRUST */}
+      <div style={{ background:C.el, borderTop:`1px solid ${C.border}`, borderBottom:`1px solid ${C.border}` }}>
+        <div className="mw gtrust">
+          {homeData.trust.map((t,i)=>(
+            <div key={i} className="ti">
+              <span style={{ color:C.accent }}>✓</span>{t.text}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* CATEGORIES */}
+      <section className="mw sp">
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:36, flexWrap:"wrap", gap:14 }}>
+          <div><span className="sl">{homeData.catSection.label}</span><h2 className="st">{homeData.catSection.title}</h2><p className="ss">{homeData.catSection.sub}</p></div>
+          <button className="bo" onClick={()=>nav("categories")}>All Categories <Ic.Arrow /></button>
+        </div>
+        <div className="gcats">
+          {categories.map(cat=>(
+            <div key={cat.id} className="ch" onClick={()=>nav("products",{cat:cat.id})} style={{ position:"relative", height:195, borderRadius:4, overflow:"hidden", cursor:"pointer", border:`1px solid ${C.border}` }}>
+              <img src={cat.image} alt={cat.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+              <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(0,0,0,0.88),rgba(0,0,0,0.2) 60%,transparent)" }} />
+              <div style={{ position:"absolute", bottom:0, padding:"16px 15px" }}>
+                <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:C.accent, letterSpacing:2, marginBottom:4 }}>{cat.count} PRODUCTS</div>
+                <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:17, color:C.white, lineHeight:1.2 }}>{cat.name}</h3>
+              </div>
+              <div style={{ position:"absolute", top:0, right:0, width:0, height:0, borderTop:`30px solid ${C.accent}`, borderLeft:"30px solid transparent", opacity:0.8 }} />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FEATURED PRODUCTS */}
+      <section style={{ background:C.card, borderTop:`1px solid ${C.border}`, borderBottom:`1px solid ${C.border}` }}>
+        <div className="mw sp">
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:36, flexWrap:"wrap", gap:14 }}>
+            <div><span className="sl">{homeData.featSection.label}</span><h2 className="st">{homeData.featSection.title}</h2></div>
+            <button className="bo" onClick={()=>nav("categories")}>Browse All <Ic.Arrow /></button>
+          </div>
+          <div className="gprod">{featured.map(p=><PCard key={p.id} p={p} nav={nav} />)}</div>
+        </div>
+      </section>
+
+      {/* WHY */}
+      <section className="mw sp">
+        <div style={{ textAlign:"center", marginBottom:48 }}>
+          <span className="sl">{homeData.why.label}</span>
+          <h2 className="st" style={{ textAlign:"center" }}>{homeData.why.title}</h2>
+          <p className="ss" style={{ margin:"10px auto 0", textAlign:"center" }}>{homeData.why.sub}</p>
+        </div>
+        <div className="gwhy">
+          {homeData.why.items.map((item,i)=>(
+            <div key={i} style={{ background:C.card, border:`1px solid ${C.border}`, borderLeft:`3px solid ${i===0?C.accent:C.border}`, padding:"26px 24px", transition:"border-left-color 0.2s" }} onMouseEnter={e=>e.currentTarget.style.borderLeftColor=C.accent} onMouseLeave={e=>{if(i!==0)e.currentTarget.style.borderLeftColor=C.border;}}>
+              <div style={{ width:28, height:28, background:C.accentD, border:`1px solid ${C.accentB}`, borderRadius:3, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14, color:C.accent, fontFamily:"'Space Mono',monospace", fontSize:10, fontWeight:700 }}>0{i+1}</div>
+              <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:18, color:C.white, marginBottom:9 }}>{item.title}</h3>
+              <p style={{ color:C.sub, fontSize:13, lineHeight:1.75 }}>{item.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <div className="mw" style={{ padding:"0 20px 72px" }}>
+        <div style={{ background:"linear-gradient(135deg,#0f0a07,#1a0d04,#0f0a07)", border:"1px solid rgba(232,96,26,0.18)", borderRadius:5, padding:"48px 36px", position:"relative", overflow:"hidden" }}>
+          <div style={{ position:"absolute", inset:0, backgroundImage:`radial-gradient(circle at 80% 50%,rgba(232,96,26,0.07),transparent 60%)` }} />
+          <div style={{ position:"relative", zIndex:1, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:22 }}>
+            <div>
+              <span className="sl">{homeData.cta.label}</span>
+              <h2 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:"clamp(22px,3.5vw,36px)", color:C.white, lineHeight:1.2 }}>{homeData.cta.title.split("\\n").map((l,i,a)=><span key={i}>{l}{i<a.length-1&&<br/>}</span>)}</h2>
+              <p style={{ color:C.sub, marginTop:10, maxWidth:380, fontSize:14 }}>{homeData.cta.body}</p>
+            </div>
+            <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
+              <button className="bp" onClick={()=>nav(homeData.cta.btn1Page)}>{homeData.cta.btn1Text} <Ic.Arrow /></button>
+              <button className="bo" onClick={()=>nav(homeData.cta.btn2Page)}>{homeData.cta.btn2Text}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* BLOG */}
+      <section className="mw" style={{ padding:"0 20px 76px" }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:32, flexWrap:"wrap", gap:14 }}>
+          <div><span className="sl">{homeData.blogSection.label}</span><h2 className="st">{homeData.blogSection.title}</h2></div>
+          <button className="bo" onClick={()=>nav("blog")}>All Articles <Ic.Arrow /></button>
+        </div>
+        <div className="gblog">
+          {blog.slice(0,3).map(post=>(
+            <div key={post.id} className="ch" onClick={()=>nav("blog",{post:post.id})} style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:4, overflow:"hidden", cursor:"pointer" }} onMouseEnter={e=>e.currentTarget.style.borderColor="rgba(232,96,26,0.38)"} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
+              <div style={{ height:162, overflow:"hidden" }}><img src={post.image} alt={post.title} style={{ width:"100%", height:"100%", objectFit:"cover" }} /></div>
+              <div style={{ padding:"16px 17px" }}>
+                <div style={{ display:"flex", gap:8, marginBottom:8, flexWrap:"wrap" }}><span className="sku">{post.category}</span><span style={{ color:C.muted, fontSize:10, fontFamily:"'Space Mono',monospace" }}>{post.date}</span></div>
+                <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:600, fontSize:15, color:C.white, lineHeight:1.3, marginBottom:8 }}>{post.title}</h3>
+                <p style={{ color:C.sub, fontSize:12, lineHeight:1.65, marginBottom:11 }}>{post.excerpt.slice(0,88)}…</p>
+                <div style={{ color:C.accent, fontSize:12, display:"flex", alignItems:"center", gap:5, fontWeight:500 }}>Read Article <Ic.Arrow /></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/* ─── PAGE: CATEGORIES ────────────────────────────────────── */
+function CatPage({ nav, categories, products }) {
+  return (
+    <div style={{ paddingTop:60 }}>
+      <div style={{ background:C.card, borderBottom:`1px solid ${C.border}` }} className="spx">
+        <div className="mw"><span className="sl">Catalog</span><h1 className="st">Product Categories</h1><p className="ss">Six specialized product lines. OEM-specification components for wholesale and distributor supply.</p></div>
+      </div>
+      <div className="mw sp">
+        <div className="gcats" style={{ gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))" }}>
+          {categories.map(cat=>(
+            <div key={cat.id} className="ch" onClick={()=>nav("products",{cat:cat.id})} style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:4, overflow:"hidden", cursor:"pointer" }} onMouseEnter={e=>e.currentTarget.style.borderColor="rgba(232,96,26,0.38)"} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
+              <div style={{ height:185, overflow:"hidden", position:"relative" }}>
+                <img src={cat.image} alt={cat.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.4)" }} />
+                <div style={{ position:"absolute", top:10, right:10 }}><span className="sku">{products.filter(p=>p.category===cat.id).length} SKUs</span></div>
+              </div>
+              <div style={{ padding:"18px 20px" }}>
+                <h2 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:20, color:C.white, marginBottom:8 }}>{cat.name}</h2>
+                <p style={{ color:C.sub, fontSize:13, lineHeight:1.65, marginBottom:12 }}>{cat.description}</p>
+                <div style={{ color:C.accent, fontSize:12, display:"flex", alignItems:"center", gap:5, fontWeight:500 }}>View Products <Ic.Arrow /></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── PAGE: PRODUCT LISTING ───────────────────────────────── */
+function ProdList({ nav, cat, products, categories }) {
+  const [active, setActive] = useState(cat||categories[0]?.id);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const filtered = products.filter(p=>p.category===active);
+  const current = categories.find(c=>c.id===active);
+  const w = useW();
+  return (
+    <div style={{ paddingTop:60 }}>
+      <div style={{ background:C.card, borderBottom:`1px solid ${C.border}` }} className="spx">
+        <div className="mw">
+          <div style={{ display:"flex", gap:7, alignItems:"center", marginBottom:12, color:C.sub, fontSize:12, flexWrap:"wrap" }}>
+            <button onClick={()=>nav("home")} style={{ color:C.sub }}>Home</button><span style={{ color:C.muted }}>/</span>
+            <button onClick={()=>nav("categories")} style={{ color:C.sub }}>Products</button><span style={{ color:C.muted }}>/</span>
+            <span style={{ color:C.accent }}>{current?.name}</span>
+          </div>
+          <h1 className="st">{current?.name}</h1>
+          <p className="ss">{current?.description}</p>
+        </div>
+      </div>
+      <div className="mw sp">
+        {w<768&&<button className="bo bfull" style={{ marginBottom:14 }} onClick={()=>setFilterOpen(!filterOpen)}>Filter by Category <Ic.Chev o={filterOpen} /></button>}
+        <div style={{ display:"flex", gap:22, alignItems:"flex-start" }}>
+          {(w>=768||filterOpen)&&(
+            <div style={{ width:195, flexShrink:0 }}>
+              <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:4, padding:14 }}>
+                <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:11, color:C.white, letterSpacing:2.5, textTransform:"uppercase", marginBottom:11 }}>Categories</h3>
+                {categories.map(c=>(
+                  <button key={c.id} onClick={()=>{setActive(c.id);setFilterOpen(false);}} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", width:"100%", background:active===c.id?C.accentD:"none", borderLeft:active===c.id?`3px solid ${C.accent}`:"3px solid transparent", color:active===c.id?C.accent:C.sub, fontSize:12, padding:"9px 10px", textAlign:"left", transition:"all 0.18s", borderRadius:"0 3px 3px 0", marginBottom:1 }}>
+                    <span>{c.name}</span>
+                    <span style={{ fontFamily:"'Space Mono',monospace", fontSize:9 }}>{products.filter(p=>p.category===c.id).length}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          <div style={{ flex:1, minWidth:0 }}>
+            <p style={{ color:C.sub, fontSize:12, marginBottom:16 }}>Showing <strong style={{color:C.white}}>{filtered.length}</strong> products</p>
+            {filtered.length>0
+              ? <div className="gprod">{filtered.map(p=><PCard key={p.id} p={p} nav={nav} />)}</div>
+              : <div style={{ textAlign:"center", padding:"64px 0", color:C.sub }}><p>No products in this category yet.</p></div>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── PAGE: PRODUCT DETAIL ────────────────────────────────── */
+function ProdDetail({ nav, productId, products, categories, setVerifyMode, setVerifyCode }) {
+  const p = products.find(x=>x.id===productId)||products[0];
+  const gallery = p?.gallery?.length ? p.gallery : [p?.image].filter(Boolean);
+  const [img, setImg] = useState(gallery[0]);
+  const catInfo = categories.find(c=>c.id===p?.category);
+  const related = products.filter(x=>x.category===p?.category&&x.id!==p?.id).slice(0,4);
+  const compatible = (p?.compatible||"").split("\n").filter(Boolean);
+  useEffect(()=>{ setImg(gallery[0]); }, [p?.id]);
+  if(!p) return null;
+  return (
+    <div style={{ paddingTop:60 }}>
+      <div style={{ background:C.card, borderBottom:`1px solid ${C.border}`, padding:"16px 20px" }}>
+        <div className="mw" style={{ display:"flex", gap:7, alignItems:"center", color:C.sub, fontSize:12, flexWrap:"wrap" }}>
+          <button onClick={()=>nav("home")} style={{ color:C.sub }}>Home</button><span style={{ color:C.muted }}>/</span>
+          <button onClick={()=>nav("categories")} style={{ color:C.sub }}>Products</button><span style={{ color:C.muted }}>/</span>
+          <button onClick={()=>nav("products",{cat:p.category})} style={{ color:C.sub }}>{catInfo?.name}</button><span style={{ color:C.muted }}>/</span>
+          <span style={{ color:C.accent }}>{p.name}</span>
+        </div>
+      </div>
+      <div className="mw sp">
+        <div className="g2" style={{ marginBottom:52 }}>
+          {/* Images */}
+          <div>
+            <div style={{ background:C.el, border:`1px solid ${C.border}`, borderRadius:4, overflow:"hidden", height:370, marginBottom:12 }}>
+              <img src={img||"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800"} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+            </div>
+            {gallery.length>1&&(
+              <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                {gallery.map((src,i)=>(
+                  <button key={i} onClick={()=>setImg(src)} style={{ width:66, height:66, border:`2px solid ${img===src?C.accent:C.border}`, borderRadius:3, overflow:"hidden", padding:0, background:"none", transition:"border-color 0.2s", flexShrink:0 }}>
+                    <img src={src} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {/* Info */}
+          <div>
+            <span className="sku">{p.sku}</span>
+            <h1 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:"clamp(22px,3vw,34px)", color:C.white, lineHeight:1.15, margin:"12px 0 16px" }}>{p.name}</h1>
+            <div style={{ background:C.card, border:`1px solid ${C.border}`, borderLeft:`3px solid ${C.accent}`, padding:"13px 16px", borderRadius:3, marginBottom:22 }}>
+              <p style={{ color:C.sub, fontSize:14, lineHeight:1.75 }}>{p.shortDesc}</p>
+            </div>
+            <div style={{ display:"flex", gap:10, marginBottom:26, flexWrap:"wrap" }}>
+              <button className="bp" onClick={()=>nav("contact")}>Request Inquiry <Ic.Arrow /></button>
+              {p.pdfUrl
+                ? <a href={p.pdfUrl} download target="_blank" className="bo" style={{ display:"inline-flex", alignItems:"center", gap:7 }}>
+                    <Ic.Down /> Download Catalog PDF
+                  </a>
+                : <span style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"10px 16px", border:`1px dashed ${C.border}`, borderRadius:3, color:C.muted, fontSize:12, fontFamily:"'Rajdhani',sans-serif", letterSpacing:1, textTransform:"uppercase" }}>
+                    <Ic.File /> Catalog Not Yet Uploaded
+                  </span>
+              }
+            </div>
+            <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:4, padding:"15px 18px" }}>
+              <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:11, color:C.white, letterSpacing:2.5, textTransform:"uppercase", marginBottom:12, paddingBottom:10, borderBottom:`1px solid ${C.border}` }}>Key Specifications</h3>
+              {p.specs.slice(0,5).map((s,i)=>(
+                <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"8px 0", borderBottom:i<4?`1px solid ${C.border}`:"none", gap:10 }}>
+                  <span style={{ color:C.sub, fontSize:12 }}>{s.key}</span>
+                  <span style={{ color:C.text, fontSize:11, fontFamily:"'Space Mono',monospace", fontWeight:700, flexShrink:0 }}>{s.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        {/* Full specs + compatible */}
+        <div className="g2" style={{ marginBottom:60 }}>
+          <div>
+            <h2 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:20, color:C.white, marginBottom:16, paddingBottom:10, borderBottom:`2px solid ${C.accent}`, display:"inline-block" }}>Technical Specifications</h2>
+            <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:4, overflow:"hidden" }}>
+              <table style={{ width:"100%", borderCollapse:"collapse" }}>
+                <tbody>{p.specs.map((s,i)=>(
+                  <tr key={i} style={{ background:i%2===0?"transparent":C.el }}>
+                    <td style={{ padding:"10px 15px", color:C.sub, fontSize:12, width:"44%", borderRight:`1px solid ${C.border}` }}>{s.key}</td>
+                    <td style={{ padding:"10px 15px", color:C.white, fontSize:11, fontFamily:"'Space Mono',monospace", fontWeight:700 }}>{s.value}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <h2 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:20, color:C.white, marginBottom:16, paddingBottom:10, borderBottom:`2px solid ${C.accent}`, display:"inline-block" }}>Compatible Models</h2>
+            <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:4, padding:"13px 17px" }}>
+              {compatible.map((m,i)=>(
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:i<compatible.length-1?`1px solid ${C.border}`:"none" }}>
+                  <span style={{ color:C.accent, flexShrink:0 }}><Ic.Chk /></span>
+                  <span style={{ color:C.text, fontSize:13 }}>{m}</span>
+                </div>
+              ))}
+              <div style={{ marginTop:14, padding:"10px 12px", background:C.el, borderRadius:3, border:`1px solid ${C.border}` }}>
+                <p style={{ color:C.sub, fontSize:11 }}>Submit vehicle details via inquiry form for fitment confirmation.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        {related.length>0&&(
+          <div>
+            <div className="divider" style={{ marginBottom:40 }} />
+            <span className="sl">Related Products</span>
+            <h2 className="st" style={{ marginBottom:22 }}>From the Same Category</h2>
+            <div className="gprod">{related.map(rp=><PCard key={rp.id} p={rp} nav={nav} />)}</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── PAGE: ABOUT ─────────────────────────────────────────── */
+function About({ nav, brand }) {
+  const pillars = [
+    {n:"01",t:"Engineering Capability",b:"Every component is reverse-engineered from OEM reference parts and validated against manufacturer tolerances before production release."},
+    {n:"02",t:"Supply Consistency",b:"A-class SKUs maintained at 90-day buffer stock. Multi-location inventory for uninterrupted fulfillment at scale."},
+    {n:"03",t:"Quality Systems",b:"ISO 9001:2015 quality management with in-process dimensional checks and outgoing batch testing before dispatch."},
+    {n:"04",t:"Export Readiness",b:"Full country-of-origin documentation, packing lists, conformity certificates, and established freight forwarder network."},
+  ];
+  return (
+    <div style={{ paddingTop:60 }}>
+      <div className="gp" style={{ background:C.card, borderBottom:`1px solid ${C.border}` }}>
+        <div className="mw spx"><span className="sl">About {brand.name}</span><h1 className="st" style={{ maxWidth:560 }}>Built on Engineering. Driven by Precision.</h1><p className="ss">{brand.name} is a precision components manufacturer and global supplier serving the automotive aftermarket. Our priority: delivering OEM-specification components, consistently, at scale.</p></div>
+      </div>
+      <div className="mw sp">
+        <div className="gwhy" style={{ gridTemplateColumns:"repeat(auto-fit,minmax(250px,1fr))", gap:18, marginBottom:60 }}>
+          {pillars.map((p,i)=>(
+            <div key={i} style={{ background:C.card, border:`1px solid ${C.border}`, borderTop:`3px solid ${i===0?C.accent:C.border}`, padding:"24px 22px", borderRadius:4, transition:"border-top-color 0.2s" }} onMouseEnter={e=>e.currentTarget.style.borderTopColor=C.accent} onMouseLeave={e=>{if(i!==0)e.currentTarget.style.borderTopColor=C.border;}}>
+              <div style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:10, color:C.accent, letterSpacing:3, marginBottom:10 }}>{p.n}</div>
+              <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:18, color:C.white, marginBottom:10 }}>{p.t}</h3>
+              <p style={{ color:C.sub, fontSize:13, lineHeight:1.75 }}>{p.b}</p>
+            </div>
+          ))}
+        </div>
+        <span className="sl">Operational Overview</span>
+        <h2 className="st" style={{ marginBottom:24 }}>Supply Capabilities</h2>
+        <div className="gcap" style={{ marginBottom:52 }}>
+          {[["Product Lines","6 Categories"],["SKUs Stocked","6,000+"],["Export Markets","38 Countries"],["Quality Standard","ISO 9001:2015"],["Lead Time","7–14 Days"],["Certifications","ECE R90 / IATF"]].map(([label,value])=>(
+            <div key={label} style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:4, padding:"16px 18px", display:"flex", justifyContent:"space-between", alignItems:"center", gap:10 }}>
+              <span style={{ color:C.sub, fontSize:12 }}>{label}</span>
+              <span style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:16, color:C.accent, flexShrink:0 }}>{value}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ background:C.card, border:`1px solid ${C.border}`, borderLeft:`4px solid ${C.accent}`, borderRadius:4, padding:"26px 30px", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:18 }}>
+          <div>
+            <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:20, color:C.white, marginBottom:6 }}>Request Distributor Information</h3>
+            <p style={{ color:C.sub, fontSize:13 }}>Pricing, MOQ, samples, and technical documentation for qualified buyers.</p>
+          </div>
+          <button className="bp" onClick={()=>nav("contact")}>Contact Us <Ic.Arrow /></button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── PAGE: CONTACT ───────────────────────────────────────── */
+function Contact({ brand, addInquiry }) {
+  const [form, setForm] = useState({name:"",email:"",phone:"",company:"",message:""});
+  const [sent, setSent] = useState(false);
+  const upd = (k,v) => setForm({...form,[k]:v});
+  return (
+    <div style={{ paddingTop:60 }}>
+      <div style={{ background:C.card, borderBottom:`1px solid ${C.border}` }} className="spx">
+        <div className="mw"><span className="sl">Get In Touch</span><h1 className="st">Contact & Inquiries</h1><p className="ss">Product inquiries, pricing, samples, or distributor onboarding. Reviewed within one business day.</p></div>
+      </div>
+      <div className="mw sp">
+        <div className="g2a">
+          <div>
+            {[[<Ic.Mail />,"Email",brand.email],[<Ic.Phone />,"Phone",brand.phone],[<Ic.Pin />,"Address",brand.address]].map(([icon,label,value],i)=>(
+              <div key={i} style={{ display:"flex", gap:12, padding:"15px 0", borderBottom:`1px solid ${C.border}` }}>
+                <div style={{ width:34, height:34, background:C.accentD, border:"1px solid rgba(232,96,26,0.2)", borderRadius:3, display:"flex", alignItems:"center", justifyContent:"center", color:C.accent, flexShrink:0 }}>{icon}</div>
+                <div>
+                  <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:C.muted, letterSpacing:2, textTransform:"uppercase", marginBottom:3 }}>{label}</div>
+                  <div style={{ color:C.text, fontSize:13 }}>{value}</div>
+                </div>
+              </div>
+            ))}
+            <div style={{ marginTop:24, background:C.card, border:`1px solid ${C.border}`, borderRadius:4, padding:18 }}>
+              <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:14, color:C.white, marginBottom:12 }}>Working Hours</h3>
+              {[["Mon – Fri","08:00 – 18:00 GMT+6"],["Saturday","09:00 – 14:00 GMT+6"],["Sunday","Closed"]].map(([d,h],i)=>(
+                <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"7px 0", borderBottom:i<2?`1px solid ${C.border}`:"none" }}>
+                  <span style={{ color:C.sub, fontSize:12 }}>{d}</span>
+                  <span style={{ color:C.text, fontSize:10, fontFamily:"'Space Mono',monospace" }}>{h}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {sent ? (
+            <div style={{ background:C.card, border:"1px solid rgba(34,197,94,0.3)", borderRadius:4, padding:"44px 28px", textAlign:"center" }}>
+              <div style={{ width:50, height:50, background:"rgba(34,197,94,0.1)", border:"1px solid rgba(34,197,94,0.3)", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px", color:C.green }}><Ic.Chk /></div>
+              <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:22, color:C.white, marginBottom:8 }}>Inquiry Submitted</h3>
+              <p style={{ color:C.sub, fontSize:14 }}>Our distributor team will respond within one business day.</p>
+              <button className="bo" onClick={()=>setSent(false)} style={{ marginTop:20 }}>Submit Another</button>
+            </div>
+          ) : (
+            <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:4, padding:"28px 26px" }}>
+              <h2 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:20, color:C.white, marginBottom:22 }}>Submit an Inquiry</h2>
+              <div className="fgrid">
+                {[["Full Name *","name","John Smith","text"],["Email *","email","john@company.com","email"],["Phone","phone","+1 000 0000","tel"],["Company","company","Your Company Ltd.","text"]].map(([label,field,ph,type])=>(
+                  <div key={field} className="fg"><label className="lbl">{label}</label><input type={type} placeholder={ph} value={form[field]} onChange={e=>upd(field,e.target.value)} style={{width:"100%"}} /></div>
+                ))}
+              </div>
+              <div className="fg"><label className="lbl">Message / Requirements *</label><textarea rows={4} placeholder="Describe requirements, SKUs of interest, quantities, destination country…" value={form.message} onChange={e=>upd("message",e.target.value)} style={{width:"100%"}} /></div>
+              <button className="bp bfull" onClick={()=>{if(form.name&&form.email&&form.message){addInquiry({...form,time:new Date().toLocaleString()});setSent(true);}}}> Send Inquiry <Ic.Arrow /></button>
+              <p style={{ color:C.muted, fontSize:11, textAlign:"center", marginTop:11 }}>Your information will not be shared with third parties.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── PAGE: FAQ ───────────────────────────────────────────── */
+function FAQPage({ faq }) {
+  const [open, setOpen] = useState(0);
+  return (
+    <div style={{ paddingTop:60 }}>
+      <div style={{ background:C.card, borderBottom:`1px solid ${C.border}` }} className="spx">
+        <div className="mw"><span className="sl">Support</span><h1 className="st">Frequently Asked Questions</h1><p className="ss">Common questions from distributors, dealers, and wholesale buyers.</p></div>
+      </div>
+      <div style={{ maxWidth:800, margin:"0 auto", padding:"56px 20px" }}>
+        {faq.map((item,i)=>(
+          <div key={item.id} style={{ borderBottom:`1px solid ${C.border}` }}>
+            <button onClick={()=>setOpen(open===i?-1:i)} style={{ width:"100%", color:open===i?C.white:C.sub, display:"flex", justifyContent:"space-between", alignItems:"center", padding:"19px 0", textAlign:"left", gap:14, transition:"color 0.2s" }} onMouseEnter={e=>e.currentTarget.style.color=C.white} onMouseLeave={e=>{if(open!==i)e.currentTarget.style.color=C.sub;}}>
+              <span style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:600, fontSize:16, lineHeight:1.3, flex:1 }}>{item.q}</span>
+              <span style={{ color:C.accent, flexShrink:0 }}><Ic.Chev o={open===i} /></span>
+            </button>
+            {open===i && <div className="fu" style={{ paddingBottom:20, color:C.sub, fontSize:14, lineHeight:1.8 }}>{item.a}</div>}
+          </div>
+        ))}
+        <div style={{ background:C.card, border:`1px solid ${C.border}`, borderLeft:`3px solid ${C.accent}`, borderRadius:4, padding:"20px 22px", marginTop:40 }}>
+          <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:17, color:C.white, marginBottom:5 }}>Have a Different Question?</h3>
+          <p style={{ color:C.sub, fontSize:13 }}>Our technical and distributor teams are available for specific product or supply questions.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── PAGE: BLOG ──────────────────────────────────────────── */
+function BlogPage({ nav, postId, blog }) {
+  const [post, setPost] = useState(postId?blog.find(p=>p.id===postId):null);
+  if(post) return (
+    <div style={{ paddingTop:60 }}>
+      <div style={{ background:C.card, borderBottom:`1px solid ${C.border}`, padding:"16px 20px" }}>
+        <div className="mw" style={{ display:"flex", gap:7, color:C.sub, fontSize:12, flexWrap:"wrap" }}>
+          <button onClick={()=>nav("home")} style={{ color:C.sub }}>Home</button><span style={{ color:C.muted }}>/</span>
+          <button onClick={()=>setPost(null)} style={{ color:C.sub }}>Blog</button><span style={{ color:C.muted }}>/</span>
+          <span style={{ color:C.accent }}>{post.category}</span>
+        </div>
+      </div>
+      <article style={{ maxWidth:760, margin:"0 auto", padding:"44px 20px" }}>
+        <div style={{ display:"flex", gap:10, marginBottom:16, flexWrap:"wrap", alignItems:"center" }}>
+          <span className="sku">{post.category}</span>
+          <span style={{ color:C.muted, fontSize:10, fontFamily:"'Space Mono',monospace" }}>{post.date} · {post.readTime}</span>
+        </div>
+        <h1 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:"clamp(22px,4vw,36px)", color:C.white, lineHeight:1.15, marginBottom:24 }}>{post.title}</h1>
+        <div style={{ height:320, borderRadius:4, overflow:"hidden", marginBottom:28, border:`1px solid ${C.border}` }}><img src={post.image} alt={post.title} style={{ width:"100%", height:"100%", objectFit:"cover" }} /></div>
+        <p style={{ fontSize:15, color:C.sub, lineHeight:1.85, borderLeft:`3px solid ${C.accent}`, paddingLeft:16, marginBottom:24, fontStyle:"italic" }}>{post.excerpt}</p>
+        {(post.content||"").split("\n\n").map((para,i)=><p key={i} style={{ color:C.sub, fontSize:14, lineHeight:1.9, marginBottom:18 }}>{para}</p>)}
+        <div className="divider" style={{ margin:"36px 0" }} />
+        <button className="bo" onClick={()=>setPost(null)}>← Back to Blog</button>
+      </article>
+    </div>
+  );
+  return (
+    <div style={{ paddingTop:60 }}>
+      <div style={{ background:C.card, borderBottom:`1px solid ${C.border}` }} className="spx">
+        <div className="mw"><span className="sl">Knowledge Base</span><h1 className="st">Technical Insights</h1><p className="ss">Analysis and guidance for automotive parts distributors and wholesale buyers.</p></div>
+      </div>
+      <div className="mw sp">
+        {blog.length>0&&(
+          <div className="gfeat ch" onClick={()=>setPost(blog[0])} style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:4, overflow:"hidden", cursor:"pointer", marginBottom:24 }} onMouseEnter={e=>e.currentTarget.style.borderColor="rgba(232,96,26,0.38)"} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
+            <div style={{ minHeight:250, overflow:"hidden" }}><img src={blog[0].image} alt={blog[0].title} style={{ width:"100%", height:"100%", objectFit:"cover", minHeight:250 }} /></div>
+            <div style={{ padding:"28px 28px", display:"flex", flexDirection:"column", justifyContent:"center" }}>
+              <div style={{ display:"flex", gap:10, marginBottom:12 }}><span className="sku">{blog[0].category}</span><span style={{ color:C.muted, fontSize:10, fontFamily:"'Space Mono',monospace" }}>{blog[0].date}</span></div>
+              <h2 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:"clamp(17px,2.5vw,22px)", color:C.white, lineHeight:1.25, marginBottom:12 }}>{blog[0].title}</h2>
+              <p style={{ color:C.sub, fontSize:13, lineHeight:1.7, marginBottom:18 }}>{blog[0].excerpt}</p>
+              <div style={{ color:C.accent, fontSize:12, display:"flex", alignItems:"center", gap:5, fontWeight:500 }}>Read Article <Ic.Arrow /></div>
+            </div>
+          </div>
+        )}
+        <div className="gblog">
+          {blog.slice(1).map(p=>(
+            <div key={p.id} className="ch" onClick={()=>setPost(p)} style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:4, overflow:"hidden", cursor:"pointer" }} onMouseEnter={e=>e.currentTarget.style.borderColor="rgba(232,96,26,0.38)"} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
+              <div style={{ height:178, overflow:"hidden" }}><img src={p.image} alt={p.title} style={{ width:"100%", height:"100%", objectFit:"cover" }} /></div>
+              <div style={{ padding:"17px 17px" }}>
+                <div style={{ display:"flex", gap:8, marginBottom:9 }}><span className="sku">{p.category}</span><span style={{ color:C.muted, fontSize:10, fontFamily:"'Space Mono',monospace" }}>{p.date}</span></div>
+                <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:600, fontSize:16, color:C.white, lineHeight:1.3, marginBottom:8 }}>{p.title}</h3>
+                <p style={{ color:C.sub, fontSize:12, lineHeight:1.65, marginBottom:12 }}>{p.excerpt.slice(0,90)}…</p>
+                <div style={{ color:C.accent, fontSize:12, display:"flex", alignItems:"center", gap:5, fontWeight:500 }}>Read Article <Ic.Arrow /></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── PAGE: PRODUCT AUTHENTICITY VERIFICATION ────────────── */
+function VerifyPage({ code, products, brand, header, onExit }) {
+  const product = products.find(p => (p.verifyCode||p.sku) === code);
+  const valid = !!product;
+  const timestamp = new Date().toLocaleString("en-US",{dateStyle:"long",timeStyle:"short"});
+
+  return (
+    <div style={{ minHeight:"100vh", background:"#050607", display:"flex", flexDirection:"column" }}>
+      <GS />
+      {/* Top bar */}
+      <div style={{ borderBottom:`1px solid ${C.border}`, padding:"0 24px", display:"flex", alignItems:"center", height:58, background:"rgba(5,6,7,0.95)", backdropFilter:"blur(12px)", position:"sticky", top:0, zIndex:100 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:9, flex:1 }}>
+          {header.logo
+            ? <img src={header.logo} alt={header.logoText} style={{ height:30, objectFit:"contain" }} />
+            : <><div style={{ width:28, height:28, background:C.accent, display:"flex", alignItems:"center", justifyContent:"center", clipPath:"polygon(0 0,100% 0,100% 72%,72% 100%,0 100%)" }}><span style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:13, color:"#fff" }}>{(header.logoText||"A")[0]}</span></div>
+               <span style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:16, color:C.white, letterSpacing:3 }}>{header.logoText}</span></>
+          }
+        </div>
+        <span style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:C.muted, letterSpacing:2.5, textTransform:"uppercase" }}>PRODUCT AUTHENTICITY VERIFICATION</span>
+        <div style={{ flex:1, display:"flex", justifyContent:"flex-end" }}>
+          <button onClick={onExit} className="bo bsm">← Back to Site</button>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"48px 20px" }}>
+        {valid
+          ? <VerifySuccess product={product} brand={brand} timestamp={timestamp} code={code} onExit={onExit} />
+          : <VerifyFail code={code} brand={brand} onExit={onExit} />
+        }
+      </div>
+
+      {/* Footer */}
+      <div style={{ borderTop:`1px solid ${C.border}`, padding:"16px 24px", textAlign:"center" }}>
+        <p style={{ color:C.muted, fontSize:11 }}>{brand.name} Authenticity System · {brand.email} · {new Date().getFullYear()}</p>
+      </div>
+    </div>
+  );
+}
+
+function VerifySuccess({ product, brand, timestamp, code, onExit }) {
+  return (
+    <div style={{ maxWidth:620, width:"100%", textAlign:"center" }} className="fu">
+      {/* Animated success ring */}
+      <div style={{ position:"relative", width:108, height:108, margin:"0 auto 28px" }}>
+        <div style={{ width:"100%", height:"100%", borderRadius:"50%", background:"rgba(34,197,94,0.08)", border:"2px solid rgba(34,197,94,0.35)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 0 48px rgba(34,197,94,0.12)" }}>
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+      </div>
+
+      {/* GENUINE badge */}
+      <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.3)", borderRadius:3, padding:"6px 18px", marginBottom:22 }}>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="#22c55e"><path d="M20 6L9 17l-5-5"/></svg>
+        <span style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:"#22c55e", letterSpacing:2.5, textTransform:"uppercase" }}>Genuine Product Verified</span>
+      </div>
+
+      <h1 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:"clamp(26px,4vw,40px)", color:C.white, lineHeight:1.15, marginBottom:12 }}>
+        Congratulations!
+      </h1>
+      <p style={{ fontSize:16, color:C.text, marginBottom:10, fontWeight:500 }}>
+        You have purchased an authentic <span style={{ color:C.accent }}>{brand.name}</span> product.
+      </p>
+      <p style={{ color:C.sub, fontSize:14, lineHeight:1.75, maxWidth:460, margin:"0 auto 36px" }}>
+        This product has been successfully verified as a genuine original product from {brand.name}. Thank you for choosing authentic.
+      </p>
+
+      {/* Product details card */}
+      <div style={{ background:C.card, border:"1px solid rgba(34,197,94,0.2)", borderRadius:6, padding:24, marginBottom:32, textAlign:"left", boxShadow:"0 0 40px rgba(34,197,94,0.04)" }}>
+        <div style={{ display:"flex", gap:16, alignItems:"center", marginBottom:20, paddingBottom:20, borderBottom:`1px solid ${C.border}` }}>
+          <div style={{ width:76, height:76, borderRadius:5, overflow:"hidden", background:C.el, flexShrink:0, border:`1px solid ${C.border}` }}>
+            <img src={product.image} alt={product.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+          </div>
+          <div>
+            <h3 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:20, color:C.white, marginBottom:6 }}>{product.name}</h3>
+            <span className="sku">{product.sku}</span>
+          </div>
+          <div style={{ marginLeft:"auto", textAlign:"right" }}>
+            <div style={{ background:"rgba(34,197,94,0.1)", border:"1px solid rgba(34,197,94,0.3)", borderRadius:3, padding:"8px 14px" }}>
+              <p style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:"#22c55e", letterSpacing:2, textTransform:"uppercase" }}>AUTHENTIC</p>
+            </div>
+          </div>
+        </div>
+        {[
+          ["Verification ID", code, true],
+          ["Product SKU", product.sku, true],
+          ["Manufacturer", brand.name, false],
+          ["Verified On", timestamp, false],
+          ["Status", "✓ Genuine Original", false],
+        ].map(([label, value, mono]) => (
+          <div key={label} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"9px 0", borderBottom:`1px solid ${C.border}`, gap:16 }}>
+            <span style={{ color:C.sub, fontSize:12, flexShrink:0 }}>{label}</span>
+            <span style={{ color: label==="Status" ? "#22c55e" : C.text, fontSize: mono ? 11 : 13, fontFamily: mono ? "'Space Mono',monospace" : "inherit", fontWeight: mono ? 700 : 400, textAlign:"right" }}>{value}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
+        <button className="bp" onClick={onExit} style={{ padding:"13px 28px" }}>
+          Explore More Products
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button className="bo" onClick={onExit}>Back to Home</button>
+      </div>
+      <p style={{ color:C.muted, fontSize:12, marginTop:20 }}>
+        Concerns about this product?{" "}
+        <button onClick={onExit} style={{ color:C.accent, background:"none", fontSize:12, textDecoration:"underline", cursor:"pointer" }}>Contact our support team</button>
+      </p>
+    </div>
+  );
+}
+
+function VerifyFail({ code, brand, onExit }) {
+  return (
+    <div style={{ maxWidth:520, width:"100%", textAlign:"center" }} className="fu">
+      {/* Fail icon */}
+      <div style={{ width:108, height:108, borderRadius:"50%", background:"rgba(239,68,68,0.08)", border:"2px solid rgba(239,68,68,0.3)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 28px", boxShadow:"0 0 48px rgba(239,68,68,0.08)" }}>
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round">
+          <circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/>
+        </svg>
+      </div>
+
+      <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.25)", borderRadius:3, padding:"6px 18px", marginBottom:22 }}>
+        <span style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:"#ef4444", letterSpacing:2.5, textTransform:"uppercase" }}>Verification Failed</span>
+      </div>
+
+      <h1 style={{ fontFamily:"'Rajdhani',sans-serif", fontWeight:700, fontSize:"clamp(24px,4vw,36px)", color:C.white, lineHeight:1.15, marginBottom:14 }}>
+        Product Not Verified
+      </h1>
+      <p style={{ color:C.sub, fontSize:15, lineHeight:1.75, maxWidth:420, margin:"0 auto 16px" }}>
+        This product could not be verified. The code is not registered in our authentication system.
+      </p>
+      <p style={{ color:C.sub, fontSize:14, lineHeight:1.75, maxWidth:400, margin:"0 auto 32px" }}>
+        This may indicate a counterfeit product, an error in the verification code, or the product may not yet be registered. Please contact our support team immediately.
+      </p>
+
+      {/* Code shown */}
+      <div style={{ background:C.card, border:"1px solid rgba(239,68,68,0.2)", borderRadius:4, padding:"14px 20px", marginBottom:32, display:"inline-block" }}>
+        <p style={{ color:C.muted, fontSize:10, fontFamily:"'Space Mono',monospace", letterSpacing:2, marginBottom:4 }}>CODE ATTEMPTED</p>
+        <p style={{ color:"#ef4444", fontFamily:"'Space Mono',monospace", fontSize:14, fontWeight:700 }}>{code || "—"}</p>
+      </div>
+
+      <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
+        <button className="bp bred" onClick={onExit} style={{ padding:"13px 28px" }}>Contact Support</button>
+        <button className="bo" onClick={onExit}>Back to Home</button>
+      </div>
+
+      <p style={{ color:C.muted, fontSize:12, marginTop:24, lineHeight:1.7 }}>
+        {brand.name} uses unique digital codes on every genuine product.<br/>
+        If you believe this is an error, please email <span style={{ color:C.accent }}>{brand.email}</span>
+      </p>
+    </div>
+  );
+}
+
+/* ─── MAIN APP ────────────────────────────────────────────── */
+function App() {
+  const [page, setPage] = useState("home");
+  const [selCat, setSelCat] = useState(null);
+  const [selProduct, setSelProduct] = useState(null);
+  const [selPost, setSelPost] = useState(null);
+  const [adminMode, setAdminMode] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+
+  /* CMS STATE — all editable via admin */
+  const [brand,    setBrand]    = useState(INIT_BRAND);
+  const [header,   setHeader]   = useState(INIT_HEADER);
+  const [homeData, setHomeData] = useState(INIT_HOME);
+  const [footer,   setFooter]   = useState(INIT_FOOTER);
+  const [seo,      setSeo]      = useState(INIT_SEO);
+  const [products, setProducts] = useState(INIT_PRODUCTS);
+  const [categories, setCategories] = useState(INIT_CATEGORIES);
+  const [blog,     setBlog]     = useState(INIT_BLOG);
+  const [faq,      setFaq]      = useState(INIT_FAQ);
+  const [inquiries, setInquiries] = useState([]);
+
+  // Verification page state
+  const [verifyMode, setVerifyMode] = useState(false);
+  const [verifyCode, setVerifyCode] = useState("");
+
+  /* 🔒 SECURE ADMIN ACCESS — Two hidden methods, zero public links
+     ═══════════════════════════════════════════════════════════════
+
+     METHOD 1 — Secret URL (for live deployed website):
+       Go to:  https://yoursite.com/#admin
+       • Login modal opens instantly
+       • #admin erased from address bar immediately — no trace
+
+     METHOD 2 — Keyboard shortcut (works in preview / iframe too):
+       Click inside the page first, then press:
+       • Ctrl + Shift + A  (Windows / Linux)
+       • Cmd  + Shift + A  (Mac)
+
+     Both methods are completely invisible to regular visitors.
+     ═══════════════════════════════════════════════════════════════ */
+  useEffect(() => {
+    // Handle all hash-based routing
+    const checkHash = () => {
+      const hash = window.location.hash;
+      // Admin access
+      if (hash === "#admin" && !adminMode) {
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        setShowLogin(true);
+        return;
+      }
+      // Product verification: #verify/CODE
+      if (hash.startsWith("#verify/")) {
+        const code = hash.replace("#verify/", "").trim();
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        if (code) { setVerifyCode(code); setVerifyMode(true); }
+        return;
+      }
+    };
+    checkHash();
+    window.addEventListener("hashchange", checkHash);
+
+    // Keyboard shortcut — Ctrl/Cmd+Shift+A (works in preview/iframe)
+    const onKey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "A") {
+        e.preventDefault();
+        if (!adminMode) setShowLogin(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+
+    return () => {
+      window.removeEventListener("hashchange", checkHash);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [adminMode]);
+
+  const nav = (p, extra={}) => {
+    setVerifyMode(false); // always exit verify on nav
+    setPage(p);
+    if (extra.cat !== undefined) setSelCat(extra.cat);
+    if (extra.product !== undefined) setSelProduct(extra.product);
+    if (extra.post !== undefined) setSelPost(extra.post);
+    window.scrollTo({ top:0, behavior:"smooth" });
+  };
+
+  // Show verification page
+  if (verifyMode) return (
+    <VerifyPage
+      code={verifyCode}
+      products={products}
+      brand={brand}
+      header={header}
+      onExit={() => { setVerifyMode(false); nav("home"); }}
+    />
+  );
+
+  if (adminMode) return (
+    <AdminPanel onExit={()=>setAdminMode(false)}
+      products={products} setProducts={setProducts}
+      categories={categories} setCategories={setCategories}
+      blog={blog} setBlog={setBlog}
+      faq={faq} setFaq={setFaq}
+      brand={brand} setBrand={setBrand}
+      inquiries={inquiries}
+      header={header} setHeader={setHeader}
+      homeData={homeData} setHomeData={setHomeData}
+      footer={footer} setFooter={setFooter}
+      seo={seo} setSeo={setSeo}
+    />
+  );
+
+  return (
+    <div style={{ background:C.bg, minHeight:"100vh" }}>
+      <GS />
+      {showLogin && (
+        <AdminLogin
+          onSuccess={() => { setShowLogin(false); setAdminMode(true); }}
+          onClose={() => setShowLogin(false)}
+        />
+      )}
+      <Header nav={nav} page={page} header={header} brand={brand} />
+      <main>
+        {page==="home"       && <Home       nav={nav} brand={brand} products={products} categories={categories} blog={blog} homeData={homeData} />}
+        {page==="categories" && <CatPage    nav={nav} categories={categories} products={products} />}
+        {page==="products"   && <ProdList   nav={nav} cat={selCat} products={products} categories={categories} />}
+        {page==="product"    && <ProdDetail nav={nav} productId={selProduct} products={products} categories={categories} setVerifyMode={setVerifyMode} setVerifyCode={setVerifyCode} />}
+        {page==="about"      && <About      nav={nav} brand={brand} />}
+        {page==="contact"    && <Contact    brand={brand} addInquiry={inq=>setInquiries([...inquiries,inq])} />}
+        {page==="faq"        && <FAQPage    faq={faq} />}
+        {page==="blog"       && <BlogPage   nav={nav} postId={selPost} blog={blog} />}
+      </main>
+      <Footer nav={nav} brand={brand} categories={categories} footer={footer} />
+    </div>
+  );
+}
+
+
+// Mount the app
+const _root = ReactDOM.createRoot(document.getElementById('root'));
+_root.render(<App />);
+
+// Remove loading screen once React has rendered
+const _loading = document.getElementById('loading');
+if (_loading) _loading.style.display = 'none';
+  </script>
+</body>
+</html>
